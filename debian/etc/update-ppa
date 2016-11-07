@@ -69,10 +69,9 @@ has-tag() {
 next-rev() {
     local prefix="$1"
 
-    local rev cur
+    local rev
     for rev in {0..999}; do
-        cur="$prefix$rev"
-        if ! has-tag "$cur"; then
+        if ! has-tag "$prefix$rev"; then
             echo "$rev"
             return 0
         fi
@@ -102,8 +101,9 @@ do_dist() {
     local branch="$debian_prefix/$dist"
 
     local pre_version="${base_version}~${dist}"
+    local pre_tag_version=$(taggify "$pre_version")
 
-    local next_rev=$(next-rev "$pre_version")
+    local next_rev=$(next-rev "$pre_tag_version")
     local cur_rev=$(( $next_rev - 1 ))
     [[ $cur_rev -gt 0 ]] || local cur_rev=0
 
@@ -114,7 +114,7 @@ do_dist() {
     fi
 
     local version="$pre_version$rev"
-    local tag_version="$(taggify "$version")"
+    local tag_version="$pre_tag_version$rev"
 
     echo
     echo "Dist: $dist branch=$branch version=$version"
@@ -146,7 +146,7 @@ do_dist() {
       --git-builder='debuild --preserve-envvar=CCACHE_DIR --prepend-path=/usr/lib/ccache -i -I' \
       -S -sa
 
-    dput "$PPA" "../build-area/${pkg}_${version}_source.changes" || return 0
+    dput "$PPA" "../build-area/${pkg}_${version}_source.changes" || return 1
 
     echo "-- Tagging"
     git tag -f "${tag_version}"
@@ -156,4 +156,6 @@ do_dist() {
 for dist in "${dists[@]}"; do
     do_dist "$dist"
 done
+
+echo "DONE"
 
