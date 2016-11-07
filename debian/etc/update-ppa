@@ -111,7 +111,7 @@ for dist in $dists; do
     echo "-- Checking out $branch"
     git checkout "$branch"
     echo "-- Merging from master"
-    git merge --ff master
+    git merge --no-edit master
 
     echo "-- Updating changelog. version=$version"
     dch -b \
@@ -121,15 +121,19 @@ for dist in $dists; do
         "Rebuild for ${dist}"
     dch -a "Changed build-dependencies to packages available in ${dist}"
 
+    echo "-- Committing"
     git commit -m 'Bump' debian/changelog
-    git tag -f "$debian_prefix/${version}"
 
+    echo "-- Building"
     gbp buildpackage \
       --git-debian-branch="$branch" \
       --git-submodules \
       --git-builder='debuild --preserve-envvar=CCACHE_DIR --prepend-path=/usr/lib/ccache -i -I' \
       -S -sa
 
-    dput "$PPA" "../build-area/${pkg}_${version}_source.changes" || :
+    dput "$PPA" "../build-area/${pkg}_${version}_source.changes" || continue
+
+    echo "-- Tagging"
+    git tag -f "$debian_prefix/${version}"
 done
 
