@@ -11,29 +11,118 @@ on_exit() {
 trap 'on_exit' EXIT
 on_exit
 
+debian_prefix="ubuntu"
+
+tags=($(git rev-parse --symbolic-full-name --tags))
+
+upstream_tags=()
+debian_tags=()
+ppa_tags=()
+unknown_tags=()
+
+for full_tag in "${tags[@]}"; do
+    tag="${full_tag#refs/tags/}"
+    case "$tag" in
+        $debian_prefix/v*)
+            debian_tags+=("$tag")
+
+            case "$tag" in
+                $debian_prefix/v*ppa*)
+                    ppa_tags+=("$tag")
+                    ;;
+            esac
+
+            ;;
+        v*)
+            upstream_tags+=("$tag")
+            ;;
+        *)
+            unknown_tags+=("$tag")
+            ;;
+    esac
+done
+
+echo "Tags: (${#tags[@]})"
+echo "- Upstream:" "${upstream_tags[@]}"
+echo "- Debian:" "${debian_tags[@]}"
+echo "- PPA:" "${ppa_tags[@]}"
+echo "- Unknown:" "${unknown_tags[@]}"
+echo
+
+has-tag() {
+    local needle="$1"
+
+    local tag
+    for tag in "${tags[@]}"; do
+        if [[ "$tag" = "$needle" ]]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+next-rev() {
+    local base_version="$1" start_rev="${2:-0}"
+
+    local rev cur
+    for rev in {0..999}; do
+        cur="${base_version//%rev%/$rev}"
+        if ! has-tag "$cur"; then
+            echo "$rev"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
 pkg=$(dpkg-parsechangelog -S Source)
 base_version=$(dpkg-parsechangelog -S Version)
 
-: ${rev:=1}
+#git tag -f "$debian_prefix/v${base_version}"
+
 : ${dists:="precise trusty xenial yakkety zesty"}
 
 for dist in $dists; do
-    branch="ubuntu/$dist"
-    version="${base_version}~${dist}${rev}"
+    branch="$debian_prefix/$dist"
 
-    git checkout -B "$branch" master
+    pre_version="${base_version}~${dist}"
 
-    dch \
-        -b \
-        -v "${version}" \
+    next_rev=$(next-rev "$pre_version")
+    cur_rev=$(( $next_rev - 1 ))
+    [[ $cur_rev -gt 0 ]] || cur_rev=0
+
+    if [[ -n "$INCR" ]]; then
+        rev="$next_rev"
+    else
+        rev="$cur_rev"
+    fi
+
+    version+="$pre_version$rev"
+
+    echo
+    echo "Dist: $dist branch=$branch version=$Version"
+    echo "---"
+
+    #echo "-- Checking out $branch"
+    #git checkout -B "$branch" "master"
+
+    echo "-- Checking out $branch"
+    git checkout "$branch"
+    echo "-- Merging from master"
+    git merge --ff master
+
+    echo "-- Updating changelog. version=$version"
+    dch -b \
         --force-distribution \
         -D "$dist" \
+        -v "$version" \
         "Rebuild for ${dist}"
-
-    dch \
-        -a "Changed build-dependencies to packages available in ${dist}"
+    dch -a "Changed build-dependencies to packages available in ${dist}"
 
     git commit -m 'Bump' debian/changelog
+    git tag -f "$debian_prefix/${version}"
 
     gbp buildpackage \
       --git-debian-branch="$branch" \
@@ -41,6 +130,6 @@ for dist in $dists; do
       --git-builder='debuild --preserve-envvar=CCACHE_DIR --prepend-path=/usr/lib/ccache -i -I' \
       -S -sa
 
-    dput "$PPA" "../build-area/${pkg}_${version}_source.changes"
+    dput "$PPA" "../build-area/${pkg}_${version}_source.changes" || :
 done
 
