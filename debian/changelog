@@ -1,3 +1,10 @@
+pyflame (1.2.1-0ppa2~yakkety0) yakkety; urgency=medium
+
+  * Rebuild for yakkety
+  * Changed build-dependencies to packages available in yakkety
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Sun, 06 Nov 2016 21:33:19 -0800
+
 pyflame (1.2.1-0ppa2) unstable; urgency=medium
 
   * Bump to 1.2.1
