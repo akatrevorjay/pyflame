@@ -13,8 +13,9 @@ on_exit
 
 debian_prefix="ubuntu"
 
-tags=($(git rev-parse --symbolic-full-name --tags))
+full_tags=($(git rev-parse --symbolic-full-name --tags))
 
+tags=()
 upstream_tags=()
 debian_tags=()
 ppa_tags=()
@@ -22,6 +23,9 @@ unknown_tags=()
 
 for full_tag in "${tags[@]}"; do
     tag="${full_tag#refs/tags/}"
+
+    tags+=("$tag")
+
     case "$tag" in
         $debian_prefix/v*)
             debian_tags+=("$tag")
@@ -54,7 +58,7 @@ has-tag() {
 
     local tag
     for tag in "${tags[@]}"; do
-        if [[ "$tag" = "$needle" ]]; then
+        if [[ "$tag" == "$needle" ]]; then
             return 0
         fi
     done
@@ -63,11 +67,11 @@ has-tag() {
 }
 
 next-rev() {
-    local base_version="$1" start_rev="${2:-0}"
+    local prefix="$1"
 
     local rev cur
     for rev in {0..999}; do
-        cur="${base_version//%rev%/$rev}"
+        cur="$prefix$rev"
         if ! has-tag "$cur"; then
             echo "$rev"
             return 0
@@ -75,6 +79,12 @@ next-rev() {
     done
 
     return 1
+}
+
+taggify() {
+    local tag="$debian_prefix/v${1#$debian_prefix/v}"
+    tag="${tag//\~/_}"
+    echo "$tag"
 }
 
 pkg=$(dpkg-parsechangelog -S Source)
@@ -86,34 +96,37 @@ if [[ ${#dists[@]} -eq 0 ]]; then
     dists=(zesty yakkety xenial precise trusty)
 fi
 
-for dist in "${dists[@]}"; do
-    branch="$debian_prefix/$dist"
 
-    pre_version="${base_version}~${dist}"
+do_dist() {
+    local dist="$1"
+    local branch="$debian_prefix/$dist"
 
-    next_rev=$(next-rev "$pre_version")
-    cur_rev=$(( $next_rev - 1 ))
-    [[ $cur_rev -gt 0 ]] || cur_rev=0
+    local pre_version="${base_version}~${dist}"
+
+    local next_rev=$(next-rev "$pre_version")
+    local cur_rev=$(( $next_rev - 1 ))
+    [[ $cur_rev -gt 0 ]] || local cur_rev=0
 
     if [[ -n "$INCR" ]]; then
-        rev="$next_rev"
+        local rev="$next_rev"
     else
-        rev="$cur_rev"
+        local rev="$cur_rev"
     fi
 
-    version+="$pre_version$rev"
+    local version="$pre_version$rev"
+    local tag_version="$(taggify "$version")"
 
     echo
-    echo "Dist: $dist branch=$branch version=$Version"
+    echo "Dist: $dist branch=$branch version=$version"
     echo "---"
 
-    #echo "-- Checking out $branch"
-    #git checkout -B "$branch" "master"
+    echo "-- Checking out $branch"
+    git checkout -B "$branch" "master"
 
     echo "-- Checking out $branch"
     git checkout "$branch"
     echo "-- Merging from master"
-    git merge --no-edit master
+    git rebase --strategy into master
 
     echo "-- Updating changelog. version=$version"
     dch -b \
@@ -133,9 +146,14 @@ for dist in "${dists[@]}"; do
       --git-builder='debuild --preserve-envvar=CCACHE_DIR --prepend-path=/usr/lib/ccache -i -I' \
       -S -sa
 
-    dput "$PPA" "../build-area/${pkg}_${version}_source.changes" || continue
+    dput "$PPA" "../build-area/${pkg}_${version}_source.changes" || return 0
 
     echo "-- Tagging"
-    git tag -f "$debian_prefix/${version}"
+    git tag -f "${tag_version}"
+}
+
+
+for dist in "${dists[@]}"; do
+    do_dist "$dist"
 done
 
