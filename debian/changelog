@@ -1,3 +1,10 @@
+pyflame (1.2.1-0ppa3~zesty0) zesty; urgency=medium
+
+  * Rebuild for zesty
+  * Changed build-dependencies to packages available in zesty
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Sun, 06 Nov 2016 21:35:50 -0800
+
 pyflame (1.2.1-0ppa3) unstable; urgency=medium
 
   * Bump to 1.2.1
