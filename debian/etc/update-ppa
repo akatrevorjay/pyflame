@@ -1,0 +1,46 @@
+#!/bin/bash
+set -e
+set -xv
+
+: ${PPA:=ppa:trevorjay/ppa}
+
+on_exit() {
+    git checkout master || :
+}
+
+trap 'on_exit' EXIT
+on_exit
+
+pkg=$(dpkg-parsechangelog -S Source)
+base_version=$(dpkg-parsechangelog -S Version)
+
+: ${rev:=1}
+: ${dists:="precise trusty xenial yakkety zesty"}
+
+for dist in $dists; do
+    branch="ubuntu/$dist"
+    version="${base_version}~${dist}${rev}"
+
+    git checkout -B "$branch" master
+
+    dch \
+        -b \
+        -v "${version}" \
+        --force-distribution \
+        -D "$dist" \
+        "Rebuild for ${dist}"
+
+    dch \
+        -a "Changed build-dependencies to packages available in ${dist}"
+
+    git commit -m 'Bump' debian/changelog
+
+    gbp buildpackage \
+      --git-debian-branch="$branch" \
+      --git-submodules \
+      --git-builder='debuild --preserve-envvar=CCACHE_DIR --prepend-path=/usr/lib/ccache -i -I' \
+      -S -sa
+
+    dput "$PPA" "../build-area/${pkg}_${version}_source.changes"
+done
+
