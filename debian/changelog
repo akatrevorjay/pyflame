@@ -1,3 +1,9 @@
+pyflame (1.2.1-0) unstable; urgency=medium
+
+  * Bump to 1.2.1
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Tue, 10 Nov 2016 22:14:32 -0700
+
 pyflame (1.2.1) unstable; urgency=medium
 
   * New newest 1.2.1 tag
