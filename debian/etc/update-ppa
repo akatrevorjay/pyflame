@@ -2,7 +2,7 @@
 set -e
 set -xv
 
-: ${PPA:=ppa:trevorjay/ppa}
+: ${PPA:=ppa:trevorjay/pyflame}
 
 on_exit() {
     git checkout master || :
