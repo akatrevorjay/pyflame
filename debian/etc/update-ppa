@@ -82,9 +82,11 @@ base_version=$(dpkg-parsechangelog -S Version)
 
 #git tag -f "$debian_prefix/v${base_version}"
 
-: ${dists:="precise trusty xenial yakkety zesty"}
+if [[ ${#dists[@]} -eq 0 ]]; then
+    dists=(zesty yakkety xenial precise trusty)
+fi
 
-for dist in $dists; do
+for dist in "${dists[@]}"; do
     branch="$debian_prefix/$dist"
 
     pre_version="${base_version}~${dist}"
