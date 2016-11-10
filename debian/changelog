@@ -1,3 +1,10 @@
+pyflame (1.2.1-0ppa4~xenial0) xenial; urgency=medium
+
+  * Rebuild for xenial
+  * Changed build-dependencies to packages available in xenial
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Thu, 10 Nov 2016 03:31:07 -0800
+
 pyflame (1.2.1-0ppa4) unstable; urgency=medium
 
   * Build for python3 as well
