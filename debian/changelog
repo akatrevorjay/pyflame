@@ -1,3 +1,9 @@
+pyflame (1.2.1-0ppa4) unstable; urgency=medium
+
+  * Build for python3 as well
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Thu, 10 Nov 2016 03:28:53 -0800
+
 pyflame (1.2.1-0ppa3) unstable; urgency=medium
 
   * Bump to 1.2.1
