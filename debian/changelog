@@ -1,3 +1,12 @@
+pyflame (1.2.1ppa5) unstable; urgency=medium
+
+  [ Trevor Joynson (trevorj) ]
+  * Fix package deps for py3
+
+  [ Trevor Joynson (Debian) ]
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Fri, 11 Nov 2016 09:02:04 -0800
+
 pyflame (1.2.1-0ppa4) unstable; urgency=medium
 
   * Build for python3 as well
