@@ -1,7 +1,7 @@
 Source: pyflame
 Priority: extra
 Maintainer: Evan Klitzke <evan@uber.com>
-Build-Depends: debhelper (>= 9.0.0), autotools-dev, dh-autoreconf, pkg-config, python-dev, pythen3-dev, g++
+Build-Depends: debhelper (>= 9.0.0), autotools-dev, dh-autoreconf, pkg-config, python-dev, python3-dev, g++
 Standards-Version: 3.9.3
 Section: libs
 X-Python-Version: >= 2.6
@@ -9,7 +9,7 @@ X-Python-Version: >= 2.6
 Package: pyflame
 Architecture: any
 Multi-Arch: same
-Depends: ${shlibs:Depends}, ${misc:Depends}, libstdc++6, python3 || python
+Depends: ${shlibs:Depends}, ${misc:Depends}, libstdc++6, python3 | python
 Recommends: python3, python
 Description: Python flamegraph tool
 
@@ -17,5 +17,5 @@ Package: pyflame-dbg
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${pyflame:Version}
-Recommends: python3-dbg || python-dbg
+Recommends: python3-dbg | python-dbg
 Description: Python flamegraph tool (debug package)
