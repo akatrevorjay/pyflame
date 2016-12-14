@@ -1,1 +1,2 @@
 0001-Workaround-failure-when-we-lack-namespace-support.patch
+0002-Python-3.2-on-precise-does-not-have-PyASCIIObject-in.patch
