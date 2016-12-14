@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+set -xv
+
+gbp buildpackage \
+  --git-submodules \
+  --git-builder='debuild --preserve-envvar=CCACHE_DIR --prepend-path=/usr/lib/ccache -i -I' \
+  --git-ignore-new \
+  "$@"
