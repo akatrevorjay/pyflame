@@ -1,6 +1,4 @@
-pyflame (1.2.1ppa5ubuntu1~2.gbp278868) UNRELEASED; urgency=medium
-
-  ** SNAPSHOT build @2788686cc52d1c9a378e492c4fafc562c6f53171 **
+pyflame (1.2.1ppa6) unstable; urgency=medium
 
   * Patchy patches
   * Snapshot build
