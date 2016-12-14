@@ -1,8 +1,12 @@
-pyflame (1.2.1ppa5ubuntu1~1.gbpa739ea) UNRELEASED; urgency=medium
+pyflame (1.2.1ppa5ubuntu1~2.gbp278868) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @a739eaec20b67db815ca400cb34e0cf22e8fdeb2 **
+  ** SNAPSHOT build @2788686cc52d1c9a378e492c4fafc562c6f53171 **
 
   * Patchy patches
+  * Snapshot build
+  * Build
+  * Whoops
+  * Hacks on hacks
 
  -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 14 Dec 2016 13:15:35 -0800
 
