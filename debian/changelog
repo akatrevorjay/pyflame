@@ -1,3 +1,10 @@
+pyflame (1.2.1ppa6~precise0) precise; urgency=medium
+
+  * Rebuild for precise
+  * Changed build-dependencies to packages available in precise
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 14 Dec 2016 13:38:45 -0800
+
 pyflame (1.2.1ppa6) unstable; urgency=medium
 
   * Patchy patches
