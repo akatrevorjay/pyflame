@@ -1,3 +1,10 @@
+pyflame (1.2.1ppa6~trusty0) trusty; urgency=medium
+
+  * Rebuild for trusty
+  * Changed build-dependencies to packages available in trusty
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 14 Dec 2016 13:38:55 -0800
+
 pyflame (1.2.1ppa6) unstable; urgency=medium
 
   * Patchy patches
