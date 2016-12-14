@@ -2,12 +2,9 @@ pyflame (1.2.1ppa5ubuntu1~1.gbpa739ea) UNRELEASED; urgency=medium
 
   ** SNAPSHOT build @a739eaec20b67db815ca400cb34e0cf22e8fdeb2 **
 
-  [ Trevor Joynson (trevorj) ]
   * Patchy patches
 
-  [ Trevor Joynson (Debian) ]
-
- -- Trevor Joynson (trevorj) <github@skywww.net>  Wed, 14 Dec 2016 13:15:35 -0800
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 14 Dec 2016 13:15:35 -0800
 
 pyflame (1.2.1ppa5) unstable; urgency=medium
 
