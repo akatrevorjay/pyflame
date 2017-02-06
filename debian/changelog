@@ -1,3 +1,18 @@
+pyflame (1.2.1ppa7ubuntu1~1.gbpa193f5) UNRELEASED; urgency=medium
+
+  ** SNAPSHOT build @a193f56c757946d3b35e56d2d5643e606b27d32a **
+
+  [ Trevor Joynson (trevorj) ]
+  * Workaround failure when we lack namespace support
+  * Python 3.2 on precise does not have PyASCIIObject in scope
+  * Add note about PPA
+  * Lol
+  * mrclean
+
+  [ Trevor Joynson (Debian) ]
+
+ -- Trevor Joynson (trevorj) <github@skywww.net>  Mon, 06 Feb 2017 00:38:05 -0800
+
 pyflame (1.2.1ppa6) unstable; urgency=medium
 
   * Patchy patches
