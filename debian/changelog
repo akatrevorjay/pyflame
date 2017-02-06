@@ -1,4 +1,4 @@
-pyflame (1.2.1ppa7ubuntu1~1.gbpa193f5) UNRELEASED; urgency=medium
+pyflame (1.2.1ppa7ubuntu1~1.gbpa193f5~yakkety0) yakkety; urgency=medium
 
   ** SNAPSHOT build @a193f56c757946d3b35e56d2d5643e606b27d32a **
 
@@ -10,8 +10,10 @@ pyflame (1.2.1ppa7ubuntu1~1.gbpa193f5) UNRELEASED; urgency=medium
   * mrclean
 
   [ Trevor Joynson (Debian) ]
+  * Rebuild for yakkety
+  * Changed build-dependencies to packages available in yakkety
 
- -- Trevor Joynson (trevorj) <github@skywww.net>  Mon, 06 Feb 2017 00:38:05 -0800
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Mon, 06 Feb 2017 00:39:01 -0800
 
 pyflame (1.2.1ppa6) unstable; urgency=medium
 
