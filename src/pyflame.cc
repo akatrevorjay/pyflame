@@ -16,6 +16,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include <algorithm>
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <limits>
@@ -27,9 +29,10 @@
 
 #include "./config.h"
 #include "./exc.h"
-#include "./frame.h"
 #include "./ptrace.h"
 #include "./pyfrob.h"
+#include "./symbol.h"
+#include "./thread.h"
 #include "./version.h"
 
 // FIXME: this logic should be moved to configure.ac
@@ -49,17 +52,21 @@ const char usage_str[] =
      "  -s, --seconds=SECS   How many seconds to run for (default 1)\n"
      "  -r, --rate=RATE      Sample rate, as a fractional value of seconds "
      "(default 0.001)\n"
+     "  -L, --threads        Enable multi-threading support\n"
+     "  -o, --output=PATH    Output to file path\n"
      "  -t, --trace          Trace a child process\n"
      "  -T, --timestamp      Include timestamps for each stacktrace\n"
+     "  -p, --python         Set python version (default auto-detect)\n"
      "  -v, --version        Show the version\n"
      "  -x, --exclude-idle   Exclude idle time from statistics\n");
 
 typedef std::unordered_map<frames_t, size_t, FrameHash> buckets_t;
 
 // Prints all stack traces
-void PrintFrames(const std::vector<FrameTS> &call_stacks, size_t idle) {
+void PrintFrames(std::ostream &out, const std::vector<FrameTS> &call_stacks,
+                 size_t idle) {
   if (idle) {
-    std::cout << "(idle) " << idle << "\n";
+    out << "(idle) " << idle << "\n";
   }
   // Put the call stacks into buckets
   buckets_t buckets;
@@ -80,30 +87,30 @@ void PrintFrames(const std::vector<FrameTS> &call_stacks, size_t idle) {
     auto last = kv.first.rend();
     last--;
     for (auto it = kv.first.rbegin(); it != last; ++it) {
-      std::cout << *it << ";";
+      out << *it << ";";
     }
-    std::cout << *last << " " << kv.second << "\n";
+    out << *last << " " << kv.second << "\n";
   }
 }
 
 // Prints all stack traces with timestamps
-void PrintFramesTS(const std::vector<FrameTS> &call_stacks) {
+void PrintFramesTS(std::ostream &out, const std::vector<FrameTS> &call_stacks) {
   for (const auto &call_stack : call_stacks) {
-    std::cout << std::chrono::duration_cast<std::chrono::microseconds>(
-                     call_stack.ts.time_since_epoch())
-                     .count()
-              << "\n";
+    out << std::chrono::duration_cast<std::chrono::microseconds>(
+               call_stack.ts.time_since_epoch())
+               .count()
+        << "\n";
     // Handle idle
     if (call_stack.frames.empty()) {
-      std::cout << "(idle)\n";
+      out << "(idle)\n";
       continue;
     }
     // Print the call stack
     for (auto it = call_stack.frames.rbegin(); it != call_stack.frames.rend();
          ++it) {
-      std::cout << *it << ";";
+      out << *it << ";";
     }
-    std::cout << "\n";
+    out << "\n";
   }
 }
 
@@ -116,20 +123,27 @@ int main(int argc, char **argv) {
   bool trace = false;
   bool include_idle = true;
   bool include_ts = false;
+  bool enable_threads = false;
   double seconds = 1;
   double sample_rate = 0.001;
+  PyVersion py_version = PyVersion::Unknown;
+  std::ofstream output_file;
   for (;;) {
     static struct option long_options[] = {
         {"help", no_argument, 0, 'h'},
         {"rate", required_argument, 0, 'r'},
         {"seconds", required_argument, 0, 's'},
+        {"threads", no_argument, 0, 'L'},  // ps also uses -L for threads (LWP)
+        {"output", required_argument, 0, 'o'},
         {"trace", no_argument, 0, 't'},
         {"timestamp", no_argument, 0, 'T'},
+        {"python", required_argument, 0, 'p'},
         {"version", no_argument, 0, 'v'},
         {"exclude-idle", no_argument, 0, 'x'},
         {0, 0, 0, 0}};
     int option_index = 0;
-    int c = getopt_long(argc, argv, "hr:s:tTvx", long_options, &option_index);
+    int c =
+        getopt_long(argc, argv, "hr:s:tTp:vxLo:", long_options, &option_index);
     if (c == -1) {
       break;
     }
@@ -143,6 +157,9 @@ int main(int argc, char **argv) {
       case 'h':
         std::cout << usage_str;
         return 0;
+        break;
+      case 'L':
+        enable_threads = true;
         break;
       case 'r':
         sample_rate = std::stod(optarg);
@@ -158,6 +175,9 @@ int main(int argc, char **argv) {
       case 'T':
         include_ts = true;
         break;
+      case 'p':
+        py_version = static_cast<PyVersion>(std::stod(optarg));
+        break;
       case 'v':
         std::cout << PACKAGE_STRING << "\n\n";
         std::cout << kBuildNote << "\n";
@@ -165,6 +185,13 @@ int main(int argc, char **argv) {
         break;
       case 'x':
         include_idle = false;
+        break;
+      case 'o':
+        output_file.open(optarg, std::ios::out | std::ios::trunc);
+        if (!output_file.is_open()) {
+          std::cerr << "cannot open file \"" << optarg << "\" as output\n";
+          return 1;
+        }
         break;
       case '?':
         // getopt_long should already have printed an error message
@@ -177,6 +204,8 @@ finish_arg_parse:
   const std::chrono::microseconds interval{
       static_cast<long>(sample_rate * 1000000)};
   pid_t pid;
+  std::ostream *output = &std::cout;
+  if (output_file.is_open()) output = &output_file;
   if (trace) {
     if (optind == argc) {
       std::cerr << usage_str;
@@ -247,8 +276,12 @@ finish_arg_parse:
   size_t idle = 0;
   try {
     PtraceAttach(pid);
-    PyFrob frobber(pid);
-    frobber.DetectPython();
+    PyFrob frobber(pid, enable_threads);
+    if (py_version == PyVersion::Unknown) {
+      frobber.DetectPython();
+    } else {
+      frobber.SetPython(py_version);
+    }
 
     const std::chrono::microseconds interval{
         static_cast<long>(sample_rate * 1000000)};
@@ -257,19 +290,23 @@ finish_arg_parse:
                std::chrono::microseconds(static_cast<long>(seconds * 1000000));
     for (;;) {
       auto now = std::chrono::system_clock::now();
-      frames_t frames = frobber.GetStack();
-      if (frames.empty()) {
-        if (include_idle) {
-          idle++;
-          // Time stamp empty call stacks only if required. Since lots of time
-          // the process will be idle, this is a good optimization to have
-          if (include_ts) {
-            call_stacks.push_back({now, {}});
-          }
+      std::vector<Thread> threads = frobber.GetThreads();
+
+      // Only true for non-GIL stacks that we couldn't find a way to profile
+      // Currently this means stripped builds on non-AMD64 archs
+      if (threads.empty() && include_idle) {
+        idle++;
+        // Time stamp empty call stacks only if required. Since lots of time
+        // the process will be idle, this is a good optimization to have
+        if (include_ts) {
+          call_stacks.push_back({now, {}});
         }
-      } else {
-        call_stacks.push_back({now, frames});
       }
+
+      for (const auto &thread : threads) {
+        call_stacks.push_back({now, thread.frames()});
+      }
+
       if ((check_end) && (now + interval >= end)) {
         break;
       }
@@ -278,18 +315,18 @@ finish_arg_parse:
       PtraceAttach(pid);
     }
     if (!include_ts) {
-      PrintFrames(call_stacks, idle);
+      PrintFrames(*output, call_stacks, idle);
     } else {
-      PrintFramesTS(call_stacks);
+      PrintFramesTS(*output, call_stacks);
     }
   } catch (const PtraceException &exc) {
     // If the process terminates early then we just print the stack traces up
     // until that point in time.
     if (!call_stacks.empty() || idle) {
       if (!include_ts) {
-        PrintFrames(call_stacks, idle);
+        PrintFrames(*output, call_stacks, idle);
       } else {
-        PrintFramesTS(call_stacks);
+        PrintFramesTS(*output, call_stacks);
       }
     } else {
       std::cerr << exc.what() << std::endl;

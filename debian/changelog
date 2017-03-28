@@ -1,3 +1,34 @@
+pyflame (1.3.1ppa1ubuntu1~1.gbpd39c52) UNRELEASED; urgency=medium
+
+  ** SNAPSHOT build @d39c52dd54c9539908498585660530ce80c29b99 **
+
+  [ Trevor Joynson (trevorj) ]
+  * Dockerize
+
+  [ Trevor Joynson (Debian) ]
+
+ -- Trevor Joynson (trevorj) <github@skywww.net>  Tue, 28 Mar 2017 13:57:10 -0700
+
+pyflame (1.3.1) unstable; urgency=medium
+
+  * Only attempt code execution if --threads is used
+
+ -- Evan Klitzke <evan@localhost>  Fri, 10 Mar 2017 16:46:39 -0800
+
+pyflame (1.3.0) unstable; urgency=medium
+
+  * Support multithreading!
+  * Allow specifying the Python interpreter
+
+ -- Evan Klitzke <evan@localhost>  Wed, 08 Mar 2017 13:12:10 -0800
+
+pyflame (1.2.2) unstable; urgency=medium
+
+  * Support Python 3.2
+  * Add a -o/--output flag
+
+ -- Evan Klitzke <evan@localhost>  Sat, 18 Feb 2017 18:36:07 -0800
+
 pyflame (1.2.1ppa7ubuntu1~1.gbpa193f5) UNRELEASED; urgency=medium
 
   ** SNAPSHOT build @a193f56c757946d3b35e56d2d5643e606b27d32a **

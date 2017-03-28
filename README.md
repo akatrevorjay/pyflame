@@ -17,7 +17,8 @@ Learn more by reading
 
 ## Installing
 
-Pick your poison. Build from source or if available install a prebuilt release.
+You can build Pyflame from source, or install a pre-built release for your
+distro.
 
 ### Building from source
 
@@ -40,7 +41,7 @@ sudo dnf install autoconf automake gcc-c++ python-devel libtool
 
 ```bash
 # Install build dependencies on Debian or Ubuntu.
-sudo apt-get install autoconf automake autotools-dev g++ pkg-config python-dev libtool
+sudo apt-get install autoconf automake autotools-dev g++ pkg-config python-dev libtool make
 ```
 
 #### Compilation
@@ -133,26 +134,28 @@ data to stdout you may need to filter it somehow before sending the output to
 
 Pyflame can also generate data with timestamps which can be used to
 generate ["flame charts"](https://addyosmani.com/blog/devtools-flame-charts/)
-that can be viewed in Chrome. This is controlled with the `-T` option.
+that can be viewed in Chrome. These are a type of inverted flamegraph that can
+more readable in some cases. Output in this data format is controlled with the
+`-T` option.
 
 Use `utils/flame-chart-json` to generate the JSON data required for viewing
 Flame Charts using the Chrome CPU profiler.
 
-```bash
+```
 Usage: cat <pyflame_output_file> | flame-chart-json > <fc_output>.cpuprofile
 (or) pyflame [regular pyflame options] | flame-chart-json > <fc_output>.cpuprofile
 ```
 
-Then load the resulting .cpuprofile file from chrome CPU profiler to view Flame Chart.
+Then load the resulting `.cpuprofile` file into the Chrome CPU profiler to view
+flame chart.
 
 ## FAQ
 
 ### What Is "(idle)" Time?
 
-From time to time the Python interpreter will have nothing to do other than wait
-for I/O to complete. This will typically happen when the Python interpreter is
-waiting for network operations to finish. In this scenario Pyflame will report
-the time as "idle".
+On some platforms Pyflame can't profile code that doesn't hold the Global
+Interpreter Lock (such as I/O and native libraries like NumPy). In this case
+Pyflame will report the time as "idle".
 
 If you don't want to include this time you can use the invocation `pyflame -x`.
 
@@ -160,8 +163,8 @@ If you don't want to include this time you can use the invocation `pyflame -x`.
 
 No, these aren't supported. Someone who is proficient with low-level C
 programming can probably get BSD to work, as described in issue #3. It is
-probably much more difficult to adapt this code to work on OS X/macOS since the
-current code assumes that the host
+probably much more difficult (although not impossible) to adapt this code to
+work on OS X/macOS, since the current code assumes that the host
 uses [ELF](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format) files
 as the executable file format for the Python interpreter.
 
@@ -251,6 +254,38 @@ If you'd like to enable it:
 setsebool -P deny_ptrace 0
 ```
 
+### Does Pyflame support multithreaded applications?
+
+Yes, Pyflame supports multithreaded applications. The default behavior is for
+Pyflame to trace only the currently running thread (if there is one). Normally
+in Python only one thread can run at a time, due to the GIL, so in some sense
+this is a more accurate representation of the profile of an application, even
+when it is multithreaded.
+
+If instead you invoke Pyflame with the `--threads` option, Pyflame will take a
+snapshot of each thread's stack each time it samples the target process. At the
+end of the invocation, the profiling data for each thread will be printed to
+stdout sequentially. This gives you a more accurate profile in the sense that
+you will see what each thread was trying to do, even if it wasn't actually
+scheduled to run.
+
+**Pyflame may "freeze" the target process if you use this option with older
+versions of the Linux kernel.** In particular, for this option to work you need
+a kernel built with [waitid() ptrace support](https://lwn.net/Articles/688624/).
+This change was landed for Linux kernel 4.7. Most Linux distros also backported
+this change to older kernels, e.g. this change was backported to the 3.16 kernel
+series in 3.16.37 (which is in Debian Jessie's kernel patches). For more
+extensive discussion,
+see [issue #55](https://github.com/uber/pyflame/issues/55).
+
+One interesting use of this feature is to get a point-in-time snapshot of what
+each thread is doing, like so:
+
+```bash
+# Get a point-in-time snapshot of what each thread is currently running.
+pyflame -s 0 --threads PID
+```
+
 ## Python 3 Support
 
 This mostly works: if you have the Python 3 headers installed on your system,
@@ -263,7 +298,12 @@ bug:
 [Pyflame can only decode ASCII filenames in Python 3](https://github.com/uber/pyflame/issues/2).
 The issue has more details, if you want to help fix it.
 
-## Hacking
+## Contributing
+
+We love getting pull requests and bug reports! This section outlines some ways
+you can contribute to Pyflame.
+
+### Hacking
 
 This section will explain the Pyflame code for people who are interested in
 contributing source code patches.
@@ -273,11 +313,14 @@ the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
 Additionally, all of the source code is formatted
 with [clang-format](http://clang.llvm.org/docs/ClangFormat.html). There's a
 `.clang-format` file checked into the root of this repository which will make
-`clang-format` do the right thing.
+`clang-format` do the right thing. Different clang releases may format the
+source code slightly differently, as the formatting rules are updated within
+clang itself. Therefore you should eyeball the changes made when formatting,
+especially if you have an older version of clang.
 
 The Linux-specific code is be mostly restricted to the files `src/aslr.*`,
 `src/namespace.*`, and `src/ptrace.*`. If you want to port Pyflame to another
-Unix you will probably only need to modify these files.
+Unix, you will probably only need to modify these files.
 
 You can run the test suite locally like this:
 
@@ -285,6 +328,23 @@ You can run the test suite locally like this:
 # Run the Pyflame test suite.
 make test
 ```
+
+### How Else Can I Help?
+
+Patches are not the only way to contribute to Pyflame! Bug reports are very
+useful as well. If you file a bug, make sure you tell us the exact version of
+Python you're using, and how to reproduce the issue.
+
+We are also actively looking to learn about how people are using Pyflame. One
+way to help is to write a blog post about how you used Pyflame. If you do, we may
+add a link to your blog post here. Some existing blog posts on Pyflame include:
+
+ * [Pyflame: Uber Engineering's Ptracing Profiler For Python](http://eng.uber.com/pyflame/) by
+   Evan Klitzke (2016-09)
+ * [Pyflame Dual Interpreter Mode](https://eklitzke.org/pyflame-dual-interpreter-mode) by
+   Evan Klitzke (2016-10)
+ * [Using Uber's Pyflame and Logs to Tackle Scaling Issues](https://benbernardblog.com/using-ubers-pyflame-and-logs-to-tackle-scaling-issues/) by
+   Benoit Bernard (2017-02)
 
 ## Legal and Licensing
 
