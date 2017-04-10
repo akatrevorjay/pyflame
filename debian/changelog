@@ -1,9 +1,62 @@
-pyflame (1.3.1ppa1ubuntu1~1.gbpd39c52) UNRELEASED; urgency=medium
+pyflame (1.3.1ppa1ubuntu1~2.gbp2d997b) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @d39c52dd54c9539908498585660530ce80c29b99 **
+  ** SNAPSHOT build @2d997ba2d27ca48c8cf9d99573b2a5e7d626def8 **
 
   [ Trevor Joynson (trevorj) ]
   * Dockerize
+
+  [ Trevor Joynson (Debian) ]
+
+  [ Anaël Beutot ]
+  * Add an optional output to a file
+  * configure.ac: use python2 for pkg-config PY2 check instead of python
+
+  [ Evan Klitzke ]
+  * fix a minor typo
+  * tag v1.2.2
+  * readme tweaks
+
+  [ Max Bolingbroke ]
+  * Ensure we specify that we want to use a C++ compiler
+
+  [ Evan Klitzke ]
+  * need to install make on jessie
+
+  [ Max Bolingbroke ]
+  * * Initial work on multi-threaded Python stack traces * Walk the .symtab to find interp_head
+
+  [ James Pickering ]
+  * * Get interp_head from PyInterpreterState_Head, using evil ptrace hacks * Detect if Python executable is PIE * Add test for multithreading
+
+  [ Evan Klitzke ]
+  * use mmap
+
+  [ James Pickering ]
+  * Pause threads during unsafe memory writes
+
+  [ Evan Klitzke ]
+  * pep-8
+  * add note about clang-format
+  * add an option to disable multi-threading
+  * add contributing notes
+
+  [ Marcio Ribeiro ]
+  * feat(pyfrob) let user set python version (#54)
+
+  [ Evan Klitzke ]
+  * disable thread profiling by default, fixes #55 (#58)
+  * release 1.3.0
+  * make sure we dealloc the page when using PtraceCallFunction() (#59)
+  * include chrono
+  * check the return value of ptrace for PTRACE_CONT and PTRACE_SINGLESTEP
+  * only call PtraceCallFunction when using --threads
+  * release 1.3.1
+
+  [ Trevor Joynson (trevorj) ]
+  * Remove patches
+
+  [ James Pickering ]
+  * Fix crash on PtraceCleanup (#61)
 
   [ Trevor Joynson (Debian) ]
 
