@@ -1,4 +1,4 @@
-pyflame (1.3.1ppa1ubuntu1~3.gbp7ab241) UNRELEASED; urgency=medium
+pyflame (1.3.1ppa1ubuntu1~3.gbp7ab241~xenial0) xenial; urgency=medium
 
   ** SNAPSHOT build @7ab241b886483962367f37ff18ccc7323abf4923 **
 
@@ -68,8 +68,10 @@ pyflame (1.3.1ppa1ubuntu1~3.gbp7ab241) UNRELEASED; urgency=medium
   * Merge sections on threading and idle time in README.md
 
   [ Trevor Joynson (Debian) ]
+  * Rebuild for xenial
+  * Changed build-dependencies to packages available in xenial
 
- -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Mon, 08 May 2017 14:22:05 -0700
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Mon, 08 May 2017 14:22:55 -0700
 
 pyflame (1.3.1) unstable; urgency=medium
 
