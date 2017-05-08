@@ -1,6 +1,6 @@
-pyflame (1.3.1ppa1ubuntu1~2.gbp2d997b) UNRELEASED; urgency=medium
+pyflame (1.3.1ppa1ubuntu1~3.gbp7ab241) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @2d997ba2d27ca48c8cf9d99573b2a5e7d626def8 **
+  ** SNAPSHOT build @7ab241b886483962367f37ff18ccc7323abf4923 **
 
   [ Trevor Joynson (trevorj) ]
   * Dockerize
@@ -60,7 +60,16 @@ pyflame (1.3.1ppa1ubuntu1~2.gbp2d997b) UNRELEASED; urgency=medium
 
   [ Trevor Joynson (Debian) ]
 
- -- Trevor Joynson (trevorj) <github@skywww.net>  Tue, 28 Mar 2017 13:57:10 -0700
+  [ Trevor Joynson (trevorj) ]
+  * Bump
+
+  [ James Pickering ]
+  * Respect threads setting in `frob.cc` - fixes #62
+  * Merge sections on threading and idle time in README.md
+
+  [ Trevor Joynson (Debian) ]
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Mon, 08 May 2017 14:22:05 -0700
 
 pyflame (1.3.1) unstable; urgency=medium
 
