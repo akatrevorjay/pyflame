@@ -1,4 +1,4 @@
-pyflame (1.3.1ppa1ubuntu1~4.gbpc1167b) UNRELEASED; urgency=medium
+pyflame (1.3.1ppa1ubuntu1~4.gbpc1167b~zesty0) zesty; urgency=medium
 
   ** SNAPSHOT build @c1167bf48ef1facb37f79570882cd9f2f2fec7b9 **
 
@@ -76,8 +76,10 @@ pyflame (1.3.1ppa1ubuntu1~4.gbpc1167b) UNRELEASED; urgency=medium
   * Clarify example command usage in README.md
 
   [ Trevor Joynson (Debian) ]
+  * Rebuild for zesty
+  * Changed build-dependencies to packages available in zesty
 
- -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Tue, 30 May 2017 16:21:55 -0700
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Tue, 30 May 2017 16:22:21 -0700
 
 pyflame (1.3.1) unstable; urgency=medium
 
