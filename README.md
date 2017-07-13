@@ -1,26 +1,57 @@
-[![Build Status](https://api.travis-ci.org/uber/pyflame.svg?branch=master)](https://travis-ci.org/uber/pyflame)
+# Pyflame: A Ptracing Profiler For Python [![Build Status](https://api.travis-ci.org/uber/pyflame.svg?branch=master)](https://travis-ci.org/uber/pyflame)
 
-# Pyflame: A Ptracing Profiler For Python
+Pyflame is a unique profiling tool that
+generates [flame graphs](http://www.brendangregg.com/flamegraphs.html) for
+Python. Pyflame is the only Python profiler based on the
+Linux [ptrace(2)](http://man7.org/linux/man-pages/man2/ptrace.2.html) system
+call. This allows it to take snapshots of the Python call stack without explicit
+instrumentation, meaning you can profile a program without modifying its source
+code! Pyflame is capable of profiling embedded Python interpreters
+like [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/). It fully supports
+profiling multi-threaded Python programs.
 
-Pyflame is a tool for
-generating [flame graphs](https://github.com/brendangregg/FlameGraph) for Python
-processes. Pyflame is different from existing Python profilers because it
-doesn't require explicit instrumentation: it will work with any running Python
-process! Pyflame works by using
-the [ptrace(2)](http://man7.org/linux/man-pages/man2/ptrace.2.html) system call
-to analyze the currently-executing stack trace for a Python process.
-
-Learn more by reading
-[the Uber Engineering blog post about Pyflame](http://eng.uber.com/pyflame/).
+Pyflame is written in C++, with attention to speed and performance. Pyflame
+usually introduces less overhead than the builtin `profile` (or `cProfile`)
+modules, and also emits richer profiling data. The profiling overhead is low
+enough that you can use it to profile live processes in production.
 
 ![pyflame](https://cloud.githubusercontent.com/assets/2734/17949703/8ef7d08c-6a0b-11e6-8bbd-41f82086d862.png)
 
-## Installing
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+**Table of Contents**
 
-You can build Pyflame from source, or install a pre-built release for your
-distro.
+- [Pyflame: A Ptracing Profiler For Python](#pyflame-a-ptracing-profiler-for-python)
+    - [Installing From Source](#installing-from-source)
+        - [Build Dependencies](#build-dependencies)
+            - [Debian/Ubuntu](#debianubuntu)
+            - [Fedora](#fedora)
+        - [Compiling](#compiling)
+            - [Creating A Debian Package](#creating-a-debian-package)
+        - [Python 3 Support](#python-3-support)
+    - [Installing A Pre-Built Package](#installing-a-pre-built-package)
+        - [Ubuntu PPA](#ubuntu-ppa)
+        - [Arch Linux](#arch-linux)
+    - [Usage](#usage)
+        - [Attaching To A Running Python Process](#attaching-to-a-running-python-process)
+        - [Tracing Python Commands](#tracing-python-commands)
+            - [Tracing Programs That Print To Stdout](#tracing-programs-that-print-to-stdout)
+        - [Timestamp ("Flame Chart") Mode](#timestamp-flame-chart-mode)
+    - [FAQ](#faq)
+        - [What Is "(idle)" Time?](#what-is-idle-time)
+        - [Are BSD / OS X / macOS Supported?](#are-bsd--os-x--macos-supported)
+        - [What Are These Ptrace Permissions Errors?](#what-are-these-ptrace-permissions-errors)
+            - [Ptrace Errors Within Docker Containers](#ptrace-errors-within-docker-containers)
+            - [Ptrace Errors Outside Docker Containers Or When Not Using Docker](#ptrace-errors-outside-docker-containers-or-when-not-using-docker)
+            - [Ptrace With SELinux](#ptrace-with-selinux)
+    - [Blog Posts](#blog-posts)
+    - [Contributing](#contributing)
+        - [Hacking](#hacking)
+        - [How Else Can I Help?](#how-else-can-i-help)
+    - [Legal and Licensing](#legal-and-licensing)
 
-### Building from source
+<!-- markdown-toc end -->
+
+## Installing From Source
 
 To build Pyflame you will need a C++ compiler with basic C++11 support. Pyflame
 is known to compile on versions of GCC as old as GCC 4.6. You'll also need GNU
@@ -28,44 +59,89 @@ Autotools ([GNU Autoconf](https://www.gnu.org/software/autoconf/autoconf.html)
 and [GNU Automake](https://www.gnu.org/software/automake/automake.html)) if
 you're building from the Git repository.
 
-#### Install build-time dependencies
+### Build Dependencies
 
-* Fedora
+#### Debian/Ubuntu
 
-```bash
-# Install build dependencies on Fedora.
-sudo dnf install autoconf automake gcc-c++ python-devel libtool
-```
-
-* Debian/Ubuntu
+Install the following packages if you are building for Debian or Ubuntu. Note
+that you technically only need one of `python-dev` or `python3-dev`, but if you have both
+installed then you can use Pyflame to profile both Python 2 and Python 3
+processes.
 
 ```bash
 # Install build dependencies on Debian or Ubuntu.
-sudo apt-get install autoconf automake autotools-dev g++ pkg-config python-dev libtool make
+sudo apt-get install autoconf automake autotools-dev g++ pkg-config python-dev python3-dev libtool make
 ```
 
-#### Compilation
+#### Fedora
 
-From git you would then compile like so:
+Again, you technically only need one of `python-devel` and `python3-devel`,
+although installing both is recommended.
+
+```bash
+# Install build dependencies on Fedora.
+sudo dnf install autoconf automake gcc-c++ python-devel python3-devel libtool
+```
+
+### Compiling
+
+Once you've installed the appropriate build dependencies (see below), you can
+compile Pyflame like so:
 
 ```bash
 ./autogen.sh
 ./configure      # Plus any options like --prefix.
 make
-make install
+make test        # Optional, test the build! Should take < 1 minute.
+make install     # Optional, install into the configure prefix.
 ```
 
-If you'd like to build a Debian package there's already a `debian/` directory at
-the root of this project. We'd like to remove this, as per the
-[upstream Debian packaging guidelines](https://wiki.debian.org/UpstreamGuide).
-If you can help get this project packaged in Debian please let us know.
+The Pyflame executable produced by the `make` command will be located at
+`src/pyflame`. Note that the `make test` command requires that you have
+`virtualenv` installed.
 
-### Installing a pre-built package
+#### Creating A Debian Package
 
-#### Ubuntu PPA
+If you'd like to build a Debian package, run the following from the root of your
+Pyflame git checkout:
 
-The community has setup a PPA for all current Ubuntu releases:
-[PPA](https://launchpad.net/~trevorjay/+archive/ubuntu/pyflame).
+```bash
+# Install additional dependencies required for packaging.
+sudo apt-get install debhelper dh-autoreconf dpkg-dev
+
+# This create a file named something like ../pyflame_1.3.1_amd64.deb
+dpkg-buildpackage -uc -us
+```
+
+### Python 3 Support
+
+Pyflame will detect Python 3 headers at build time, and will be compiled with
+Python 3 support if these headers are detected. Python 3.4 and 3.5 are known to
+work. [Issue #69](https://github.com/uber/pyflame/issues/69) tracks Python 3.6
+support. [Issue #77](https://github.com/uber/pyflame/issues/77) tracks
+supporting earlier Python 3 releases.
+
+There is one known bug specific to Python
+3. [Issue #2](https://github.com/uber/pyflame/issues/2) describes the problem:
+Pyflame assumes that Python 3 file names are encoded using ASCII. This is will
+only affect you if you actually use non-ASCII code points in your `.py` file
+names, which is probably quite uncommon. In principle it is possible to fix this
+although a bit tricky; see the linked issue for details, if you're interested in
+contributing a patch.
+
+## Installing A Pre-Built Package
+
+Several Pyflame users have created unofficial pre-built packages for different
+distros. Uploads of these packages tend to lag the official Pyflame releases, so
+you are **strongly encouraged to check the pre-built version** to ensure that it
+is not too old. If you want the newest version of Pyflame, build from source.
+
+### Ubuntu PPA
+
+[Trevor Joynson](https://github.com/akatrevorjay) has set up an unofficial PPA
+for all current Ubuntu
+releases:
+[ppa:trevorjay/pyflame](https://launchpad.net/~trevorjay/+archive/ubuntu/pyflame).
 
 ```bash
 sudo apt-add-repository ppa:trevorjay/pyflame
@@ -73,81 +149,112 @@ sudo apt-get update
 sudo apt-get install pyflame
 ```
 
-#### Arch Linux
+Note also that you can build your own Debian package easily, using the one
+provided in the `debian/` directory of this project.
 
-You can install pyflame from [AUR](https://aur.archlinux.org/packages/pyflame-git/).
+### Arch Linux
+
+[Oleg Senin](https://github.com/RealFatCat) has added an Arch Linux package
+to [AUR](https://aur.archlinux.org/packages/pyflame-git/).
 
 ## Usage
 
-After compiling Pyflame you'll get a small executable called `pyflame` (which
-will be in the `src/` directory if you haven't run `make install`). The most
-basic usage is:
+Pyflame has two distinct modes: you can attach to a running process, or you can
+trace a command from start to finish.
+
+### Attaching To A Running Python Process
+
+The default behavior of Pyflame is to attach to an existing Python process. The
+target process is specified via its PID:
 
 ```bash
 # Profile PID for 1s, sampling every 1ms.
 pyflame PID
 ```
 
-The `pyflame` command will send data to stdout that is suitable for using with
+This will print data to stdout in a format that is suitable for usage with
 Brendan Gregg's `flamegraph.pl` tool (which you can
-get [here](https://github.com/brendangregg/FlameGraph)). Therefore a typical
-command pipeline might be like this:
+get [here](https://github.com/brendangregg/FlameGraph)). A typical command
+pipeline might be like this:
 
 ```bash
 # Generate flame graph for pid 12345; assumes flamegraph.pl is in your $PATH.
 pyflame 12345 | flamegraph.pl > myprofile.svg
 ```
 
-You can also change the sample time and sampling frequency:
+You can also change the sample time with `-s`, and the sampling frequency with
+`-r`. Both units are measured in seconds.
 
 ```bash
-# Profile PID for 60 seconds, sampling every 100ms.
-pyflame -s 60 -r 0.1 PID
+# Profile PID for 60 seconds, sampling every 10ms.
+pyflame -s 60 -r 0.01 PID
 ```
 
-### Trace Mode
+The default behavior is to sample for 1 second (equivalent to `-s 1`), taking a
+snapshot every millisecond (equivalent to `-r 0.001`).
 
-Sometimes you want to trace a process from start to finish. An example would be
-tracing the run of a test suite. Pyflame supports this use case. To use it, you
-invoke Pyflame like this:
+### Tracing Python Commands
+
+Sometimes you want to trace a command from start to finish. An example would be
+tracing the run of a test suite or batch job. Pass `-t` as the **last** Pyflame
+flag to run in trace mode. Anything after the `-t` flag is interpreted literally
+as part of the command to run:
 
 ```bash
 # Trace a given command until completion.
 pyflame [regular pyflame options] -t command arg1 arg2...
 ```
 
-Frequently the value of `command` will actually be `python`, but it could be
-something else like `uwsgi` or `py.test`. For instance, here's how Pyflame can
-be used to trace its own test suite:
+
+Often `command` will be `python` or `python3`, but it could be something else,
+like `uwsgi` or `py.test`. For instance, here's how Pyflame can be used to trace
+its own test suite:
 
 ```bash
 # Trace the Pyflame test suite, a.k.a. pyflameception!
 pyflame -t py.test tests/
 ```
 
-Beware that when using the trace mode the stdout/stderr of the pyflame process
-and the traced process will be mixed. This means if the traced process sends
-data to stdout you may need to filter it somehow before sending the output to
-`flamegraph.pl`.
+As described in the docs for attach mode, you can use `-r` to control the
+sampling frequency.
+
+#### Tracing Programs That Print To Stdout
+
+By default, Pyflame will send flame graph data to stdout. If the profiled
+program is also sending data to stdout, then `flamegraph.pl` will see the output
+from both programs, and will get confused. To solve this, use the `-o` option:
+
+```bash
+# Trace a process, sending profiling information to profile.txt
+pyflame -o profile.txt -t python -c 'for x in range(1000): print(x)'
+
+# Convert profile.txt to a flame graph named profile.svg
+flamegraph.pl <profile.txt >profile.svg
+```
 
 ### Timestamp ("Flame Chart") Mode
 
-Pyflame can also generate data with timestamps which can be used to
-generate ["flame charts"](https://addyosmani.com/blog/devtools-flame-charts/)
-that can be viewed in Chrome. These are a type of inverted flamegraph that can
-more readable in some cases. Output in this data format is controlled with the
-`-T` option.
+Generally we recommend using regular flame graphs, generated by `flamegraph.pl`.
+However, Pyflame can also generate data with a special time stamp output format,
+useful for
+generating ["flame charts"](https://addyosmani.com/blog/devtools-flame-charts/)
+(somewhat like an inverted flame graph) that are viewable in Chrome. In some
+cases, the flame chart format is easier to
+understand.
 
-Use `utils/flame-chart-json` to generate the JSON data required for viewing
-Flame Charts using the Chrome CPU profiler.
+To generate a flame chart, use `pyflame -T`, and then pass the output to
+`utils/flame-chart-json` to convert the output into the JSON format required by
+the Chrome CPU profiler:
 
+```bash
+# Generate flame chart data viewable in Chrome.
+pyflame -T [other pyflame options] | flame-chart-json > foo.cpuprofile
 ```
-Usage: cat <pyflame_output_file> | flame-chart-json > <fc_output>.cpuprofile
-(or) pyflame [regular pyflame options] | flame-chart-json > <fc_output>.cpuprofile
-```
 
-Then load the resulting `.cpuprofile` file into the Chrome CPU profiler to view
-flame chart.
+Read the
+following
+[Chrome DevTools article](https://developers.google.com/web/updates/2016/12/devtools-javascript-cpu-profile-migration) for
+instructions on loading a `.cpuprofile` file in Chrome 58+.
 
 ## FAQ
 
@@ -192,12 +299,23 @@ pyflame -s 0 --threads PID
 
 ### Are BSD / OS X / macOS Supported?
 
-No, these aren't supported. Someone who is proficient with low-level C
-programming can probably get BSD to work, as described in issue #3. It is
-probably much more difficult (although not impossible) to adapt this code to
-work on OS X/macOS, since the current code assumes that the host
-uses [ELF](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format) files
-as the executable file format for the Python interpreter.
+Pyflame uses a few Linux-specific interfaces, so unfortunately it is the only
+platform supported right now. Pull requests to add support for other platforms
+are very much wanted.
+
+Someone who is proficient with low-level C systems programming can probably get
+BSD to work without *too much* difficulty. The necessary work to adapt the code
+is described in [Issue #3](https://github.com/uber/pyflame/issues/3).
+
+By comparison, it is probably *much more* work to get Pyflame working on macOS.
+The current code assumes that the host
+uses [ELF](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
+object/executable files. Apple uses a different object file format,
+called [Mach-O](https://en.wikipedia.org/wiki/Mach-O), so porting Pyflame to
+macOS would entail doing all of the work to port Pyflame to BSD, *plus*
+additional work to parse Mach-O object files. That said, the Mach-O format is
+documented online (e.g. [here](https://lowlevelbits.org/parsing-mach-o-files/)),
+so a sufficiently motivated person could get macOS support working.
 
 ### What Are These Ptrace Permissions Errors?
 
@@ -285,17 +403,17 @@ If you'd like to enable it:
 setsebool -P deny_ptrace 0
 ```
 
-## Python 3 Support
+## Blog Posts
 
-This mostly works: if you have the Python 3 headers installed on your system,
-the configure script should detect the presence of Python 3 and use it. Please
-report any bugs related to Python 3 detection if you find them (particularly if
-you have Python 3 headers installed, but the build system isn't finding them).
+If you write a blog post about Pyflame, we may include it here. Some existing
+blog posts on Pyflame include:
 
-There is one known
-bug:
-[Pyflame can only decode ASCII filenames in Python 3](https://github.com/uber/pyflame/issues/2).
-The issue has more details, if you want to help fix it.
+ * [Pyflame: Uber Engineering's Ptracing Profiler For Python](http://eng.uber.com/pyflame/) by
+   Evan Klitzke (2016-09)
+ * [Pyflame Dual Interpreter Mode](https://eklitzke.org/pyflame-dual-interpreter-mode) by
+   Evan Klitzke (2016-10)
+ * [Using Uber's Pyflame and Logs to Tackle Scaling Issues](https://benbernardblog.com/using-ubers-pyflame-and-logs-to-tackle-scaling-issues/) by
+   Benoit Bernard (2017-02)
 
 ## Contributing
 
@@ -328,22 +446,14 @@ You can run the test suite locally like this:
 make test
 ```
 
+If you change any of the Python files in the `tests/` directory, please run your
+changes through [YAPF](https://github.com/google/yapf) before submitting a PR.
+
 ### How Else Can I Help?
 
 Patches are not the only way to contribute to Pyflame! Bug reports are very
 useful as well. If you file a bug, make sure you tell us the exact version of
 Python you're using, and how to reproduce the issue.
-
-We are also actively looking to learn about how people are using Pyflame. One
-way to help is to write a blog post about how you used Pyflame. If you do, we may
-add a link to your blog post here. Some existing blog posts on Pyflame include:
-
- * [Pyflame: Uber Engineering's Ptracing Profiler For Python](http://eng.uber.com/pyflame/) by
-   Evan Klitzke (2016-09)
- * [Pyflame Dual Interpreter Mode](https://eklitzke.org/pyflame-dual-interpreter-mode) by
-   Evan Klitzke (2016-10)
- * [Using Uber's Pyflame and Logs to Tackle Scaling Issues](https://benbernardblog.com/using-ubers-pyflame-and-logs-to-tackle-scaling-issues/) by
-   Benoit Bernard (2017-02)
 
 ## Legal and Licensing
 
