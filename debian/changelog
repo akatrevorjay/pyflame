@@ -1,4 +1,4 @@
-pyflame (1.5.2ppa1ubuntu1~2.gbp4b49bd) UNRELEASED; urgency=medium
+pyflame (1.5.2ppa1ubuntu1~2.gbp4b49bd~artful0) artful; urgency=medium
 
   ** SNAPSHOT build @4b49bdba91a3092778882a49e13b19f6d5d851fb **
 
@@ -169,8 +169,10 @@ pyflame (1.5.2ppa1ubuntu1~2.gbp4b49bd) UNRELEASED; urgency=medium
   * refactor the main probe loop (#108)
 
   [ Trevor Joynson (Debian) ]
+  * Rebuild for artful
+  * Changed build-dependencies to packages available in artful
 
- -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Thu, 03 Aug 2017 18:16:06 -0700
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Thu, 03 Aug 2017 18:16:27 -0700
 
 pyflame (1.5.2) unstable; urgency=medium
 
