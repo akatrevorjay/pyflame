@@ -33,6 +33,39 @@
 #include "./exc.h"
 
 namespace pyflame {
+int DoWait(pid_t pid, int options) {
+  int status;
+  if (waitpid(pid, &status, options) == -1) {
+    std::ostringstream ss;
+    ss << "Failed to waitpid(): " << strerror(errno);
+    throw PtraceException(ss.str());
+  }
+  if (WIFSTOPPED(status)) {
+    int signum = WSTOPSIG(status);
+    if (signum != SIGTRAP) {
+      std::ostringstream ss;
+      ss << "Failed to waitpid(), unexpectedly got status: "
+         << strsignal(signum);
+      throw PtraceException(ss.str());
+    }
+  } else {
+    std::ostringstream ss;
+    ss << "Failed to waitpid(), unexpectedly got status: " << status;
+    throw PtraceException(ss.str());
+  }
+  return status;
+}
+
+bool SawEventExec(int status) {
+  return status >> 8 == (SIGTRAP | (PTRACE_EVENT_EXEC << 8));
+}
+
+void PtraceTraceme() {
+  if (ptrace(PTRACE_TRACEME, getpid(), 0, 0)) {
+    throw PtraceException("Failed to PTRACE_TRACEME");
+  }
+  raise(SIGSTOP);
+}
 
 void PtraceAttach(pid_t pid) {
   if (ptrace(PTRACE_ATTACH, pid, 0, 0)) {
@@ -48,12 +81,27 @@ void PtraceAttach(pid_t pid) {
   }
 }
 
+void PtraceSeize(pid_t pid) {
+  if (ptrace(PTRACE_SEIZE, pid, 0, 0)) {
+    std::ostringstream ss;
+    ss << "Failed to attach to PID " << pid << ": " << strerror(errno);
+    throw PtraceException(ss.str());
+  }
+}
+
 void PtraceDetach(pid_t pid) {
   if (ptrace(PTRACE_DETACH, pid, 0, 0)) {
     std::ostringstream ss;
     ss << "Failed to detach PID " << pid << ": " << strerror(errno);
     throw PtraceException(ss.str());
   }
+}
+
+void PtraceInterrupt(pid_t pid) {
+  if (ptrace(PTRACE_INTERRUPT, pid, 0, 0)) {
+    throw PtraceException("Failed to PTRACE_INTERRUPT");
+  }
+  DoWait(pid);
 }
 
 struct user_regs_struct PtraceGetRegs(pid_t pid) {
@@ -88,32 +136,16 @@ long PtracePeek(pid_t pid, unsigned long addr) {
   const long data = ptrace(PTRACE_PEEKDATA, pid, addr, 0);
   if (data == -1 && errno != 0) {
     std::ostringstream ss;
-    ss << "Failed to PTRACE_PEEKDATA at " << reinterpret_cast<void *>(addr)
-       << ": " << strerror(errno);
+    ss << "Failed to PTRACE_PEEKDATA (pid " << pid << ", addr "
+       << reinterpret_cast<void *>(addr) << "): " << strerror(errno);
     throw PtraceException(ss.str());
   }
   return data;
 }
 
-static void do_wait(pid_t pid) {
-  int status;
-  if (waitpid(pid, &status, 0) == -1) {
-    std::ostringstream ss;
-    ss << "Failed to waitpid(): " << strerror(errno);
-    throw PtraceException(ss.str());
-  }
-  if (WIFSTOPPED(status)) {
-    int signum = WSTOPSIG(status);
-    if (signum != SIGTRAP) {
-      std::ostringstream ss;
-      ss << "Failed to waitpid(), unexpectedly got status: "
-         << strsignal(signum);
-      throw PtraceException(ss.str());
-    }
-  } else {
-    std::ostringstream ss;
-    ss << "Failed to waitpid(), unexpectedly got status: " << status;
-    throw PtraceException(ss.str());
+void PtraceSetOptions(pid_t pid, long options) {
+  if (ptrace(PTRACE_SETOPTIONS, pid, 0, options)) {
+    throw PtraceException("Failed to PTRACE_SETOPTIONS");
   }
 }
 
@@ -123,7 +155,6 @@ void PtraceCont(pid_t pid) {
     ss << "Failed to PTRACE_CONT: " << strerror(errno);
     throw PtraceException(ss.str());
   }
-  do_wait(pid);
 }
 
 void PtraceSingleStep(pid_t pid) {
@@ -132,7 +163,7 @@ void PtraceSingleStep(pid_t pid) {
     ss << "Failed to PTRACE_SINGLESTEP: " << strerror(errno);
     throw PtraceException(ss.str());
   }
-  do_wait(pid);
+  DoWait(pid);
 }
 
 std::string PtracePeekString(pid_t pid, unsigned long addr) {
@@ -170,7 +201,7 @@ std::unique_ptr<uint8_t[]> PtracePeekBytes(pid_t pid, unsigned long addr,
   return bytes;
 }
 
-#ifdef __amd64__
+#if defined(__amd64__) && ENABLE_THREADS
 static const long syscall_x86 = 0x050f;  // x86 code for SYSCALL
 
 static unsigned long probe_ = 0;
@@ -237,8 +268,6 @@ long PtraceCallFunction(pid_t pid, unsigned long addr) {
       return -1;
     }
 
-    // std::cerr << "probe point is at " << reinterpret_cast<void *>(probe_)
-    //           << "\n";
     long code = 0;
     uint8_t *new_code_bytes = (uint8_t *)&code;
     new_code_bytes[0] = 0xff;  // CALL
@@ -254,40 +283,60 @@ long PtraceCallFunction(pid_t pid, unsigned long addr) {
 
   PtraceSetRegs(pid, newregs);
   PtraceCont(pid);
+  DoWait(pid);
 
   newregs = PtraceGetRegs(pid);
   PtraceSetRegs(pid, oldregs);
   return newregs.rax;
 };
 
-void PtraceCleanup(pid_t pid) {
-  if (probe_ == 0) {
-    return;
+// Like PtraceDetach(), but ignore errors.
+static inline void SafeDetach(pid_t pid) noexcept {
+  ptrace(PTRACE_DETACH, pid, 0, 0);
+}
+
+void PtraceCleanup(pid_t pid) noexcept {
+  // Clean up the memory area allocated by AllocPage().
+  if (probe_ != 0) {
+    try {
+      const user_regs_struct oldregs = PtraceGetRegs(pid);
+      const long orig_code = PtracePeek(pid, oldregs.rip);
+
+      user_regs_struct newregs = oldregs;
+      newregs.rax = SYS_munmap;
+      newregs.rdi = probe_;         // addr
+      newregs.rsi = getpagesize();  // len
+
+      // Prepare to run munmap(2) syscall.
+      PauseChildThreads(pid);
+      PtracePoke(pid, oldregs.rip, syscall_x86);
+      PtraceSetRegs(pid, newregs);
+
+      // Actually call munmap(2), and check the return value.
+      PtraceSingleStep(pid);
+      if (PtraceGetRegs(pid).rax == 0) {
+        probe_ = 0;
+      } else {
+        std::cerr << "Warning: failed to munmap(2) trampoline page! Please "
+                     "report this on GitHub.\n";
+      }
+
+      // Clean up and resume the child threads.
+      PtracePoke(pid, oldregs.rip, orig_code);
+      PtraceSetRegs(pid, oldregs);
+      ResumeChildThreads(pid);
+
+    } catch (...) {
+      // If the process has already exited, then we'll get a ptrace error, which
+      // can be safely ignored. This *should* happen at the initial
+      // PtraceGetRegs() call, but we wrap the entire block to be safe.
+    }
   }
 
-  user_regs_struct oldregs = PtraceGetRegs(pid);
-  long orig_code = PtracePeek(pid, oldregs.rip);
-
-  user_regs_struct newregs = oldregs;
-  newregs.rax = SYS_munmap;
-  newregs.rdi = probe_;         // addr
-  newregs.rsi = getpagesize();  // len
-
-  PauseChildThreads(pid);
-
-  PtracePoke(pid, oldregs.rip, syscall_x86);
-  PtraceSetRegs(pid, newregs);
-  PtraceSingleStep(pid);
-  PtracePoke(pid, oldregs.rip, orig_code);
-  PtraceSetRegs(pid, oldregs);
-
-  ResumeChildThreads(pid);
-  PtraceDetach(pid);
-
-  probe_ = 0;
+  SafeDetach(pid);
 }
 #else
-void PtraceCleanup(pid_t pid) { PtraceDetach(pid); }
+void PtraceCleanup(pid_t pid) noexcept { SafeDetach(pid); }
 #endif
 
 }  // namespace pyflame

@@ -14,7 +14,8 @@
 
 #include "./pyfrob.h"
 
-#include <ostream>
+#include <fstream>
+#include <sstream>
 
 #include "./aslr.h"
 #include "./config.h"
@@ -32,26 +33,26 @@ namespace pyflame {
 namespace {
 // locate within libpython
 PyAddresses AddressesFromLibPython(pid_t pid, const std::string &libpython,
-                                   Namespace *ns, PyVersion *version) {
+                                   Namespace *ns, PyABI *abi) {
   std::string elf_path;
   const size_t offset = LocateLibPython(pid, libpython, &elf_path);
   if (offset == 0) {
     std::ostringstream ss;
     ss << "Failed to locate libpython named " << libpython;
-    throw FatalException(ss.str());
+    throw SymbolException(ss.str());
   }
 
   ELF pyelf;
   pyelf.Open(elf_path, ns);
   pyelf.Parse();
-  const PyAddresses addrs = pyelf.GetAddresses(version);
-  if (!addrs.is_valid()) {
-    throw FatalException("Failed to locate addresses");
+  const PyAddresses addrs = pyelf.GetAddresses(abi);
+  if (addrs.empty()) {
+    throw SymbolException("Failed to locate addresses");
   }
   return addrs + offset;
 }
 
-PyAddresses Addrs(pid_t pid, Namespace *ns, PyVersion *version) {
+PyAddresses Addrs(pid_t pid, Namespace *ns, PyABI *abi) {
   std::ostringstream ss;
   ss << "/proc/" << pid << "/exe";
   ELF target;
@@ -77,8 +78,8 @@ PyAddresses Addrs(pid_t pid, Namespace *ns, PyVersion *version) {
   // the full soname. That determines where we need to look to find our symbol
   // table.
 
-  PyAddresses addrs = target.GetAddresses(version);
-  if (addrs.is_valid()) {
+  PyAddresses addrs = target.GetAddresses(abi);
+  if (addrs) {
     if (addrs.pie) {
       // If Python executable is PIE, add offsets
       std::string elf_path;
@@ -97,32 +98,43 @@ PyAddresses Addrs(pid_t pid, Namespace *ns, PyVersion *version) {
     }
   }
   if (!libpython.empty()) {
-    return AddressesFromLibPython(pid, libpython, ns, version);
+    return AddressesFromLibPython(pid, libpython, ns, abi);
   }
   // A process like uwsgi may use dlopen() to load libpython... let's just guess
   // that the DSO is called libpython2.7.so
   //
   // XXX: this won't work if the embedding language is Python 3
-  return AddressesFromLibPython(pid, "libpython2.7.so", ns, version);
+  return AddressesFromLibPython(pid, "libpython2.7.so", ns, abi);
 }
 }  // namespace
 
-#ifdef ENABLE_PY2
-namespace py2 {
+#ifdef ENABLE_PY26
+namespace py26 {
 FROB_FUNCS
 }
 #endif
 
-#ifdef ENABLE_PY3
-namespace py3 {
+#ifdef ENABLE_PY34
+namespace py34 {
 FROB_FUNCS
 }
 #endif
 
-void PyFrob::set_addrs_(PyVersion *version) {
+#ifdef ENABLE_PY36
+namespace py36 {
+FROB_FUNCS
+}
+#endif
+
+// Fill the addrs_ member
+int PyFrob::set_addrs_(PyABI *abi) {
   Namespace ns(pid_);
-  addrs_ = Addrs(pid_, &ns, version);
-#ifdef __amd64__
+  try {
+    addrs_ = Addrs(pid_, &ns, abi);
+  } catch (const SymbolException &exc) {
+    return 1;
+  }
+#if ENABLE_THREADS
   // If we didn't find the interp_head address, but we did find the public
   // PyInterpreterState_Head
   // function, use evil non-portable ptrace tricks to call the function
@@ -132,36 +144,58 @@ void PyFrob::set_addrs_(PyVersion *version) {
         PtraceCallFunction(pid_, addrs_.interp_head_fn_addr);
   }
 #endif
+  return 0;
 }
 
-void PyFrob::SetPython(PyVersion version) {
-  switch (version) {
-#ifdef ENABLE_PY2
-    case PyVersion::Py2:
-      get_threads_ = py2::GetThreads;
+int PyFrob::DetectABI(PyABI abi) {
+  // Set up the function pointers. By default, we auto-detect the ABI. If an ABI
+  // is explicitly passed to us, then use that one (even though it could be
+  // wrong)!
+  if (set_addrs_(abi == PyABI::Unknown ? &abi : nullptr)) {
+    return 1;
+  }
+  switch (abi) {
+    case PyABI::Unknown:
+      throw FatalException("Failed to detect a Python ABI.");
+      break;
+#ifdef ENABLE_PY26
+    case PyABI::Py26:
+      get_threads_ = py26::GetThreads;
       break;
 #endif
-#ifdef ENABLE_PY3
-    case PyVersion::Py3:
-      get_threads_ = py3::GetThreads;
+#ifdef ENABLE_PY34
+    case PyABI::Py34:
+      get_threads_ = py34::GetThreads;
+      break;
+#endif
+#ifdef ENABLE_PY36
+    case PyABI::Py36:
+      get_threads_ = py36::GetThreads;
       break;
 #endif
     default:
       std::ostringstream os;
-      os << "Target is Python " << static_cast<int>(version)
+      os << "Target has Python ABI " << static_cast<int>(abi)
          << ", which is not supported by this pyflame build.";
       throw FatalException(os.str());
   }
-  set_addrs_(&version);
+
+  if (addrs_.empty()) {
+    throw FatalException("DetectABI(): addrs_ is unexpectedly empty.");
+  }
+  return 0;
 }
 
-void PyFrob::DetectPython() {
-  PyVersion version = PyVersion::Unknown;
-  set_addrs_(&version);
-  SetPython(version);
+std::string PyFrob::Status() const {
+  std::ostringstream os;
+  os << "/proc/" << pid_ << "/stat";
+  std::ifstream statfile(os.str());
+  std::string line;
+  std::getline(statfile, line);
+  return line;
 }
 
-std::vector<Thread> PyFrob::GetThreads() {
+std::vector<Thread> PyFrob::GetThreads(void) const {
   return get_threads_(pid_, addrs_, enable_threads_);
 }
 }  // namespace pyflame

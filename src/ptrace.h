@@ -21,13 +21,22 @@
 #include <memory>
 #include <string>
 
+#include "./config.h"
+
 namespace pyflame {
 
-// attach to a process
-void PtraceAttach(pid_t pid);
+int DoWait(pid_t pid, int options = 0);
+
+bool SawEventExec(int status);
+
+void PtraceTraceme();
 
 // detach a process
+void PtraceAttach(pid_t pid);
 void PtraceDetach(pid_t pid);
+
+void PtraceSeize(pid_t pid);
+void PtraceInterrupt(pid_t pid);
 
 // get regs from a process
 struct user_regs_struct PtraceGetRegs(pid_t pid);
@@ -40,6 +49,8 @@ void PtracePoke(pid_t pid, unsigned long addr, long data);
 
 // read the long word at an address
 long PtracePeek(pid_t pid, unsigned long addr);
+
+void PtraceSetOptions(pid_t pid, long options);
 
 // peek a null-terminated string
 std::string PtracePeekString(pid_t pid, unsigned long addr);
@@ -54,11 +65,11 @@ void PtraceCont(pid_t pid);
 // Execute a single instruction in a traced process
 void PtraceSingleStep(pid_t pid);
 
-#ifdef __amd64__
-// call a function pointer
+#if ENABLE_THREADS
+// Call a function pointer.
 long PtraceCallFunction(pid_t pid, unsigned long addr);
 #endif
 
-// maybe dealloc the page allocated in PtraceCallFunction();
-void PtraceCleanup(pid_t pid);
+// Detach, and maybe dealloc the page allocated in PtraceCallFunction();
+void PtraceCleanup(pid_t pid) noexcept;
 }  // namespace pyflame

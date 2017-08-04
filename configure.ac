@@ -1,9 +1,21 @@
 AC_PREREQ([2.68])
-AC_INIT([pyflame], [1.3.1], [evan@uber.com])
+AC_INIT([pyflame], [1.5.2], [evan@eklitzke.org])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([src/config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([src/pyflame.cc])
+AC_CANONICAL_TARGET
+
+# Fail early if the user tries to build on BSD/OS X
+AS_IF([test x"$target_os" = xlinux-gnu], [], [AC_MSG_ERROR([Pyflame can only be built for Linux hosts])])
+
+AS_IF([test x"$target_cpu" = xx86_64],
+      [AC_MSG_NOTICE([x86-64 system, threads will be supported])
+       AC_DEFINE([ENABLE_THREADS], [1], [Threads are enabled.])
+      ],
+      [AC_MSG_NOTICE([Threading support will be disabled (only works on x86-64)])
+       AC_DEFINE([ENABLE_THREADS], [0], [Threads are enabled.])
+      ])
 
 AM_INIT_AUTOMAKE([dist-bzip2 foreign subdir-objects -Wall -Werror])
 
@@ -20,8 +32,8 @@ AM_PROG_AR
 
 LT_INIT
 
-# Fail early if the user tries to build on OS X
-AC_CHECK_HEADERS([linux/ptrace.h], [], [AC_MSG_ERROR([Pyflame only supports Linux hosts])])
+# Ensure Linux kernel headers are present
+AC_CHECK_HEADERS([linux/ptrace.h], [], [AC_MSG_ERROR([Linux kernel headers missing])])
 
 AC_LANG([C++])
 
@@ -55,15 +67,28 @@ AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MMAP
 AC_CHECK_FUNCS([getpagesize memmove munmap strerror strtol strtoul])
 
-PKG_CHECK_MODULES([PY2], [python2], [enable_py2="yes"], [AC_MSG_WARN([Building without Python 2 support])])
-AM_CONDITIONAL([ENABLE_PY2], [test x"$enable_py2" = xyes])
-AM_COND_IF([ENABLE_PY2], [AC_DEFINE([ENABLE_PY2], [1], [Python2 is enabled])])
+AC_DEFINE_UNQUOTED(PYFLAME_VERSION_STR,
+["Pyflame $PACKAGE_VERSION (commit `cd $srcdir && git describe --always`) $target_os $target_cpu"],
+[A string containing build information.])
 
-PKG_CHECK_MODULES([PY3], [python3], [enable_py3="yes"], [AC_MSG_WARN([Building without Python 3 support])])
-AM_CONDITIONAL([ENABLE_PY3], [test x"$enable_py3" = xyes])
-AM_COND_IF([ENABLE_PY3], [AC_DEFINE([ENABLE_PY3], [1], [Python3 is enabled])])
+PKG_CHECK_MODULES([PY26], [python2], [enable_py26="yes"], [AC_MSG_WARN([Building without Python 2.6/2.7 support])])
+AM_CONDITIONAL([ENABLE_PY26], [test x"$enable_py26" = xyes])
+AM_COND_IF([ENABLE_PY26], [AC_DEFINE([ENABLE_PY26], [1], [Python 2.6/2.7 will be enabled])])
+
+PKG_CHECK_MODULES([PY34], [python-3.4], [enable_py34="yes"],
+                          [PKG_CHECK_MODULES([PY34], [python-3.5], [enable_py34="yes"], [AC_MSG_WARN([Building without Python 3.4/3.5 support])])])
+AM_CONDITIONAL([ENABLE_PY34], [test x"$enable_py34" = xyes])
+AM_COND_IF([ENABLE_PY34], [AC_DEFINE([ENABLE_PY34], [1], [Python 3.4/3.5 will be enabled])])
+
+PKG_CHECK_MODULES([PY36], [python-3.6], [enable_py36="yes"], [AC_MSG_WARN([Building without Python 3.6 support])])
+AM_CONDITIONAL([ENABLE_PY36], [test x"$enable_py36" = xyes])
+AM_COND_IF([ENABLE_PY36], [AC_DEFINE([ENABLE_PY36], [1], [Python 3.6 will be enabled])])
+
+AS_IF([test x"$enable_py26" = xyes -o x"$enable_py34" = xyes -o x"$enable_py36" = xyes],
+      [AC_MSG_NOTICE([Found at least one copy of Python.h])],
+      [AC_MSG_ERROR([Failed to find a supported Python.h])]
+)
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile])
-AC_REVISION([m4_esyscmd_s([git describe --always])])
 AC_OUTPUT

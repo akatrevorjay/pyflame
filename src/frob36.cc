@@ -12,18 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+// ABI for Python 3.6
+#define PYFLAME_PY_VERSION 36
 
-namespace {
-#ifdef __VERSION__
-#ifdef __GNUC__
-const char kBuildNote[] =
-    "Compiled " __DATE__ ", " __TIME__ " by GCC " __VERSION__;
-#else
-const char kBuildNote[] =
-    "Compiled " __DATE__ ", " __TIME__ " by C compiler " __VERSION__;
-#endif
-#else
-const char kBuildNote[] = "Compiled " __DATE__ ", " __TIME__;
-#endif
-}  // namespace
+#include "./frob.cc"

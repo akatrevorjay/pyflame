@@ -1,6 +1,6 @@
-pyflame (1.3.1ppa1ubuntu1~5.gbpa01e69) UNRELEASED; urgency=medium
+pyflame (1.5.2ppa1ubuntu1~2.gbp4b49bd) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @a01e69d90d2565d11c8d64f6d962dfaca8ca615b **
+  ** SNAPSHOT build @4b49bdba91a3092778882a49e13b19f6d5d851fb **
 
   [ Trevor Joynson (trevorj) ]
   * Dockerize
@@ -109,7 +109,119 @@ pyflame (1.3.1ppa1ubuntu1~5.gbpa01e69) UNRELEASED; urgency=medium
 
   [ Trevor Joynson (Debian) ]
 
- -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 12 Jul 2017 21:00:27 -0700
+  [ Trevor Joynson (trevorj) ]
+  * Bump
+
+  [ Evan Klitzke ]
+  * update Docker related docs
+
+  [ faicker.mo ]
+  * Support glibc version<2.14 without setns api(centos6)
+
+  [ Evan Klitzke ]
+  * netns.h -> setns.h
+  * link to chinese language centos 6 guide
+
+  [ jmphilli ]
+  * push
+
+  [ Evan Klitzke ]
+  * tag and release v1.4.0
+  * add notes on python versions supported
+  * Remove an unneeded Travis step.
+  * Version -> ABI.
+  * update hacking section of README
+  * tag 1.4.1
+  * wording
+  * allow forcing the ABI again, for uwsgi (#87)
+  * tag 1.4.2
+  * move documentation to rtfd/sphinx
+  * .
+  * fix a thing
+  * fix for #88
+  * tag 1.4.3
+  * move badge order
+  * fix #90
+  * reword some docs stuff
+  * move all Python.h checks to configure.ac
+  * Various autoconf improvements.
+
+  [ jackvreeken ]
+  * Unicode support (#92)
+
+  [ Evan Klitzke ]
+  * use skipif here as well
+  * tag 1.5.0 release
+  * remove an unneeded skipif and yapf the tests
+  * detect when test suite is run from within a virtualenv (#95)
+  * Fix a bug in PtraceDetach when threads are enabled (#94)
+  * convert the man page to pandoc, fixes #97
+  * relase v1.5.1, which fixes #93
+  * explain how --abi works
+  * Switch to -p to specify the process to trace, fixes #99 (#100)
+  * remove pointless build note (#101)
+  * augment version string (#103)
+  * fix a bug with venv deactivation in runtests.sh (#105)
+  * tag v1.5.2
+  * Switch to PTRACE_TRACEME to fix startup race conditions. (#106)
+  * add version string to -h output
+  * be less aggressive about probing for libpython in attach mode (#107)
+  * refactor the main probe loop (#108)
+
+  [ Trevor Joynson (Debian) ]
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Thu, 03 Aug 2017 18:16:06 -0700
+
+pyflame (1.5.2) unstable; urgency=medium
+
+  * Update version string to include git commit hash.
+
+ -- Evan Klitzke <evan@death.star>  Tue, 01 Aug 2017 16:21:11 -0700
+
+pyflame (1.5.1) unstable; urgency=medium
+
+  * Fix the combination of -t and --threads (issue #93).
+
+ -- Evan Klitzke <evan@death.star>  Mon, 31 Jul 2017 18:09:40 -0700
+
+pyflame (1.5.0) unstable; urgency=medium
+
+  * Much improved Unicode support for Python 3
+
+ -- Evan Klitzke <evan@death.star>  Wed, 26 Jul 2017 14:44:33 -0700
+
+pyflame (1.4.4) unstable; urgency=medium
+
+  * Fix building against just Python 2
+
+ -- Evan Klitzke <evan@death.star>  Mon, 24 Jul 2017 13:28:25 -0700
+
+pyflame (1.4.3) unstable; urgency=medium
+
+  * Fix building against 3.5.
+
+ -- Evan Klitzke <evan@eklitzke.org>  Sun, 16 Jul 2017 18:48:22 -0700
+
+pyflame (1.4.2) unstable; urgency=medium
+
+  * Add --abi, similar to old -p option.
+
+ -- Evan Klitzke <evan@eklitzke.org>  Fri, 14 Jul 2017 18:56:36 -0700
+
+pyflame (1.4.1) unstable; urgency=medium
+
+  * Remove -p/--python option.
+
+ -- Evan Klitzke <evan@eklitzke.org>  Fri, 14 Jul 2017 16:43:51 -0700
+
+pyflame (1.4.0) unstable; urgency=medium
+
+  * Fix Python 3.6 support!
+  * Documentation improvements.
+  * Test improvements.
+
+ -- Evan Klitzke <evan@eklitzke.org>  Fri, 14 Jul 2017 13:21:00 -0700
+>>>>>>> origin/master
 
 pyflame (1.3.1) unstable; urgency=medium
 
