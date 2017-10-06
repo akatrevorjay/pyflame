@@ -1,10 +1,12 @@
-pyflame (1.5.6ubuntu1~1.gbpaf31c3) UNRELEASED; urgency=medium
+pyflame (1.5.6ubuntu1~1.gbpaf31c3~artful0) artful; urgency=medium
 
   ** SNAPSHOT build @af31c372321221930163f55bcfc4f0689902bbe7 **
 
   * UNRELEASED
+  * Rebuild for artful
+  * Changed build-dependencies to packages available in artful
 
- -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Fri, 06 Oct 2017 12:15:58 -0700
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Fri, 06 Oct 2017 12:16:59 -0700
 
 pyflame (1.5.6) unstable; urgency=medium
 
