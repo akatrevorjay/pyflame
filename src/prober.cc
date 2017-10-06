@@ -64,8 +64,40 @@ static const char usage_str[] =
      "  --flamechart         Include timestamps for generating Chrome "
      "\"flamecharts\"\n");
 
+// The ABIs supported in this Pyflame build.
+static const int build_abis[] = {
+#ifdef ENABLE_PY26
+    26,
+#endif
+#ifdef ENABLE_PY34
+    34,
+#endif
+#ifdef ENABLE_PY36
+    36,
+#endif
+};
+
+static_assert(sizeof(build_abis) > 0, "No Python ABIs detected!");
+
+static inline void ShowVersion(std::ostream &out) {
+  const size_t sz = sizeof(build_abis) / sizeof(int);
+  out << PYFLAME_VERSION_STR << " (ABI list: ";
+  for (size_t i = 0; i < sz - 1; i++) {
+    out << build_abis[i] << " ";
+  }
+  out << build_abis[sz - 1] << ")\n";
+}
+
 static inline std::chrono::microseconds ToMicroseconds(double val) {
   return std::chrono::microseconds{static_cast<long>(val * 1000000)};
+}
+
+static inline bool EndsWith(std::string const &value,
+                            std::string const &ending) {
+  if (ending.size() > value.size()) {
+    return false;
+  }
+  return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
 }
 
 namespace pyflame {
@@ -202,7 +234,7 @@ int Prober::ParseOpts(int argc, char **argv) {
         include_ts_ = true;
         break;
       case 'v':
-        std::cout << PYFLAME_VERSION_STR << "\n";
+        ShowVersion(std::cout);
         return 0;
         break;
       case 'x':
@@ -247,7 +279,7 @@ finish_arg_parse:
 
 int Prober::InitiatePtrace(char **argv) {
   if (trace_) {
-    if (trace_target_.find("pyflame") != std::string::npos) {
+    if (EndsWith(trace_target_, "/pyflame")) {
       std::cerr << "You tried to pyflame a pyflame, naughty!\n";
       return 1;
     }
@@ -322,6 +354,7 @@ int Prober::ProbeLoop(const PyFrob &frobber) {
   }
 
   std::vector<FrameTS> call_stacks;
+  int return_code = 0;
   size_t idle_count = 0;
   bool check_end = seconds_ >= 0;
   auto end = std::chrono::system_clock::now() + ToMicroseconds(seconds_);
@@ -345,36 +378,35 @@ int Prober::ProbeLoop(const PyFrob &frobber) {
         call_stacks.push_back({now, thread.frames()});
       }
 
-      if ((check_end) && (now + interval_ >= end)) {
+      if (check_end && (now + interval_ >= end)) {
         break;
       }
       PtraceCont(pid_);
       std::this_thread::sleep_for(interval_);
       PtraceInterrupt(pid_);
     }
+  } catch (const TerminateException &exc) {
+    goto finish;
+  } catch (const PtraceException &exc) {
+    // If the process terminates early then we just print the stack traces up
+    // until that point in time.
+    std::cerr << "Unexpected ptrace(2) exception: " << exc.what() << "\n";
+    return_code = 1;
+    goto finish;
+  } catch (const std::exception &exc) {
+    std::cerr << "Unexpected generic exception: " << exc.what() << "\n";
+    return_code = 1;
+    goto finish;
+  }
+finish:
+  if (!call_stacks.empty() || idle_count) {
     if (!include_ts_) {
       PrintFrames(*output, call_stacks, idle_count);
     } else {
       PrintFramesTS(*output, call_stacks);
     }
-  } catch (const PtraceException &exc) {
-    // If the process terminates early then we just print the stack traces up
-    // until that point in time.
-    if (!call_stacks.empty() || idle_count) {
-      if (!include_ts_) {
-        PrintFrames(*output, call_stacks, idle_count);
-      } else {
-        PrintFramesTS(*output, call_stacks);
-      }
-    } else {
-      std::cerr << exc.what() << std::endl;
-      return 1;
-    }
-  } catch (const std::exception &exc) {
-    std::cerr << exc.what() << std::endl;
-    return 1;
   }
-  return 0;
+  return return_code;
 }
 
 int Prober::FindSymbols(PyFrob *frobber) {

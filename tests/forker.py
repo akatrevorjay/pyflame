@@ -1,4 +1,4 @@
-# Copyright 2016 Uber Technologies, Inc.
+# Copyright 2017 Evan Klitzke <evan@eklitzke.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,35 +14,36 @@
 
 import argparse
 import os
-import sys
 import time
+
+
+def spawn(count):
+    # we are the child, do some stuff
+    t0 = time.time()
+    x = 0
+    while time.time() < t0 + 0.1:
+        x += 1
+
+    # spawn a new process
+    if count:
+        pid = os.fork()
+        if pid == 0:
+            spawn(count - 1)
+        else:
+            os.waitpid(pid, 0)
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-t', '--time', default=0, type=int, help='How long to run for')
-    parser.add_argument(
-        '-f', '--fork', action='store_true', help='Fork child processes')
+        '-c', '--count', type=int, default=5, help='How many times to fork')
     args = parser.parse_args()
 
-    if not args.fork:
-        sys.stdout.write('%d\n' % (os.getpid(), ))
-        sys.stdout.flush()
-    t0 = time.time()
-    while True:
-        time.sleep(0.1)
-        target = time.time() + 0.1
-        while time.time() < target:
-            pass
-        if args.fork:
-            pid = os.fork()
-            if pid == 0:
-                sys.exit(0)
-            else:
-                os.waitpid(pid, 0)
-        if args.time and time.time() - t0 >= args.time:
-            break
+    pid = os.fork()
+    if pid == 0:
+        spawn(args.count)
+    else:
+        os.waitpid(pid, 0)
 
 
 if __name__ == '__main__':
