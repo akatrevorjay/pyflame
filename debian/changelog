@@ -1,3 +1,11 @@
+pyflame (1.5.6ubuntu1~1.gbpaf31c3) UNRELEASED; urgency=medium
+
+  ** SNAPSHOT build @af31c372321221930163f55bcfc4f0689902bbe7 **
+
+  * UNRELEASED
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Fri, 06 Oct 2017 12:15:58 -0700
+
 pyflame (1.5.6) unstable; urgency=medium
 
   * Fix minor issue w/ EAGAIN during munmap
