@@ -154,7 +154,7 @@ do_dist() {
 
 
 for dist in "${dists[@]}"; do
-    do_dist "$dist"
+    do_dist "$dist" || echo "-- dist $dist failed to build. rv=$?"
 done
 
 echo "DONE"
