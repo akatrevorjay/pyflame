@@ -1,10 +1,12 @@
-pyflame (1.6.0ubuntu1~1.gbpa31665) UNRELEASED; urgency=medium
+pyflame (1.6.0ubuntu1~1.gbpa31665~zesty0) zesty; urgency=medium
 
   ** SNAPSHOT build @a316654e8dc090b278207fb287f219bbb2b03b54 **
 
   * UNRELEASED
+  * Rebuild for zesty
+  * Changed build-dependencies to packages available in zesty
 
- -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Sat, 04 Nov 2017 09:34:49 -0700
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Sat, 04 Nov 2017 09:36:43 -0700
 
 pyflame (1.6.0) unstable; urgency=medium
 
