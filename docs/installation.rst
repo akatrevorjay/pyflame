@@ -1,8 +1,10 @@
 Installing Pyflame
 ==================
 
-To build Pyflame you will need a C++ compiler with basic C++11 support. Pyflame
-is known to compile on versions of GCC as old as GCC 4.6.
+You have two options for installing Pyflame: you can try a pre-built package, or
+you can install from source. To build from source, you will need a C++ compiler
+with basic C++11 support. Pyflame is known to compile on versions of GCC as old
+as GCC 4.6.
 
 Build Dependencies
 ------------------
@@ -80,6 +82,16 @@ Several Pyflame users have created unofficial pre-built packages for different
 distros. Uploads of these packages tend to lag the official Pyflame releases, so
 you are **strongly encouraged to check the pre-built version** to ensure that it
 is not too old. If you want the newest version of Pyflame, build from source.
+
+Conda
+~~~~~
+
+`Evan Klitzke <https://github.com/eklitzke>`__ maintains a Conda package of
+Pyflame:
+
+.. code:: bash
+
+    conda install -c eklitzke pyflame
 
 Ubuntu PPA
 ~~~~~~~~~~

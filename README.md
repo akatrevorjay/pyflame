@@ -32,7 +32,7 @@ For Debian/Ubuntu, install the following:
 sudo apt-get install autoconf automake autotools-dev g++ pkg-config python-dev python3-dev libtool make
 ```
 
-Once you've got the build dependencies installed:
+Once you have the build dependencies installed:
 
 ```bash
 ./autogen.sh
@@ -42,6 +42,9 @@ make
 
 The `make` command will produce an executable at `src/pyflame` that you can run
 and use.
+
+Optionally, if you have `virtualenv` installed, you can test the executable you
+produced using `make check`.
 
 ### Using Pyflame
 
@@ -82,3 +85,7 @@ See [here](https://pyflame.readthedocs.io/en/latest/faq.html#what-are-these-ptra
 ### How Do I Profile Threaded Applications?
 
 Use the `--threads` option.
+
+### Is There A Way To Just Dump Stack Traces?
+
+Yes, use the `-d` option.
