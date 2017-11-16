@@ -1,4 +1,4 @@
-pyflame (1.6.3~ppa~1.gbp73b816) UNRELEASED; urgency=medium
+pyflame (1.6.3~ppa~1.gbp73b816~zesty0) zesty; urgency=medium
 
   ** SNAPSHOT build @73b81693150ac1ba41e70e3627f14c4277c2fbaa **
 
@@ -21,8 +21,10 @@ pyflame (1.6.3~ppa~1.gbp73b816) UNRELEASED; urgency=medium
   * fix tests on ASCII filesystems
 
   [ Trevor Joynson (Debian) ]
+  * Rebuild for zesty
+  * Changed build-dependencies to packages available in zesty
 
- -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 15 Nov 2017 20:49:24 -0800
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 15 Nov 2017 20:51:46 -0800
 
 pyflame (1.6.3) unstable; urgency=medium
 
