@@ -6,6 +6,24 @@ pyflame (1.6.0ubuntu1~1.gbpa31665) UNRELEASED; urgency=medium
 
  -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Sat, 04 Nov 2017 09:34:49 -0700
 
+pyflame (1.6.3) unstable; urgency=medium
+
+  * Fix running the tests on ASCII filesystems.
+
+ -- Evan Klitzke <evan@localhost>  Mon, 13 Nov 2017 13:27:44 -0800
+
+pyflame (1.6.2) unstable; urgency=medium
+
+  * More test suite updates for RPM packaging.
+
+ -- Evan Klitzke <evan@localhost>  Mon, 13 Nov 2017 12:22:07 -0800
+
+pyflame (1.6.1) unstable; urgency=medium
+
+  * Allow building without git version.
+
+ -- Evan Klitzke <evan@localhost>  Sun, 12 Nov 2017 19:56:13 -0800
+
 pyflame (1.6.0) unstable; urgency=medium
 
   * Add a -d/--dump command to Pyflame

@@ -54,6 +54,14 @@ def test_travis_build_environment():
     assert not sys.executable.startswith('/opt')
 
 
+@pytest.mark.skipif(
+    os.environ.get('PYMAJORVERSION') not in '23',
+    reason='PYMAJORVERSION not set.')
+def test_rpm_build_environment():
+    """Sanity checks of the RPM test environment."""
+    assert int(os.environ['PYMAJORVERSION']) == sys.version_info[0]
+
+
 @contextlib.contextmanager
 def proc(argv, wait_for_pid=True):
     # start the process and wait for it to print its pid... we explicitly do
@@ -322,6 +330,10 @@ def test_exclude_idle(sleeper):
     consume_unique(lines)
 
 
+@pytest.mark.skipif(
+    sys.getfilesystemencoding().lower() != 'utf-8',
+    reason='requires UTF-8 filesystem, see '
+    'https://bugs.python.org/issue8242')
 @pytest.mark.skipif(sys.version_info < (3, 3), reason="requires Python 3.3+")
 def test_utf8_output(unicode_sleeper):
     proc = subprocess.Popen(
@@ -533,7 +545,8 @@ def test_version(flag):
     assert proc.returncode == 0
 
     version_re = re.compile(
-        r'^Pyflame \d+\.\d+\.\d+ \(commit [\w]+\) \S+ \S+ \(ABI list: .+\)$')
+        r'^Pyflame \d+\.\d+\.\d+ (\(commit [\w]+\) )?\S+ \S+ \(ABI list: .+\)$'
+    )
     assert version_re.match(out.strip())
 
 
