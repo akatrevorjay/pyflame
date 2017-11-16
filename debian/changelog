@@ -1,10 +1,28 @@
-pyflame (1.6.0ubuntu1~1.gbpa31665) UNRELEASED; urgency=medium
+pyflame (1.6.3-0~ppa~1.gbp73b816) UNRELEASED; urgency=medium
 
+  ** SNAPSHOT build @73b81693150ac1ba41e70e3627f14c4277c2fbaa **
+
+  [ Trevor Joynson (Debian) ]
   ** SNAPSHOT build @a316654e8dc090b278207fb287f219bbb2b03b54 **
 
   * UNRELEASED
 
- -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Sat, 04 Nov 2017 09:34:49 -0700
+  [ Trevor Joynson (trevorj) ]
+  * Up
+  * Yakkety is no longer supported
+  * Up
+  * Update build script
+
+  [ Evan Klitzke ]
+  * allow building without git commit (for rpm builds)
+  * add COPR badge
+  * Make it so the pyflame test suite can be run on EPEL7
+  * tag v1.6.2
+  * fix tests on ASCII filesystems
+
+  [ Trevor Joynson (Debian) ]
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 15 Nov 2017 20:49:24 -0800
 
 pyflame (1.6.3) unstable; urgency=medium
 
