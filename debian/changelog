@@ -1,11 +1,6 @@
-pyflame (1.6.3-0~ppa~1.gbp73b816) UNRELEASED; urgency=medium
+pyflame (1.6.3-0ubuntu1~ppa~3.gbp1c48cf) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @73b81693150ac1ba41e70e3627f14c4277c2fbaa **
-
-  [ Trevor Joynson (Debian) ]
-  ** SNAPSHOT build @a316654e8dc090b278207fb287f219bbb2b03b54 **
-
-  * UNRELEASED
+  ** SNAPSHOT build @1c48cf1faa8839d0fc807ce2e17d71f777f7d0fe **
 
   [ Trevor Joynson (trevorj) ]
   * Up
@@ -22,7 +17,18 @@ pyflame (1.6.3-0~ppa~1.gbp73b816) UNRELEASED; urgency=medium
 
   [ Trevor Joynson (Debian) ]
 
- -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 15 Nov 2017 20:49:24 -0800
+  [ Evan Klitzke ]
+  * add note about centos
+  * remove debian/ directory from master
+
+  [ Trevor Joynson (trevorj) ]
+  * Swag
+  * s/precise/bionic/ as precise is no longer supported by launchpad for new builds, we do however get bionic these days.
+  * Restore the debian folder.
+
+  [ Trevor Joynson (Debian) ]
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Thu, 21 Dec 2017 20:20:41 -0800
 
 pyflame (1.6.3) unstable; urgency=medium
 
