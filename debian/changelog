@@ -1,3 +1,10 @@
+pyflame (1.6.5-0~ppa~xenial0) xenial; urgency=medium
+
+  * Rebuild for xenial
+  * Changed build-dependencies to packages available in xenial
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 25 Apr 2018 11:24:09 -0700
+
 pyflame (1.6.5-0~ppa) bionic; urgency=medium
 
   [ Trevor Joynson (Debian) ]
