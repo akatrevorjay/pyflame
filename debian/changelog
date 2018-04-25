@@ -1,6 +1,4 @@
-pyflame (1.6.3-0~ppa~1.gbp73b816) UNRELEASED; urgency=medium
-
-  ** SNAPSHOT build @73b81693150ac1ba41e70e3627f14c4277c2fbaa **
+pyflame (1.6.5-1~ppa) bionic; urgency=medium
 
   [ Trevor Joynson (Debian) ]
   ** SNAPSHOT build @a316654e8dc090b278207fb287f219bbb2b03b54 **
@@ -22,7 +20,34 @@ pyflame (1.6.3-0~ppa~1.gbp73b816) UNRELEASED; urgency=medium
 
   [ Trevor Joynson (Debian) ]
 
- -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 15 Nov 2017 20:49:24 -0800
+  [ Evan Klitzke ]
+  * add note about centos
+  * remove debian/ directory from master
+
+  [ Trevor Joynson (trevorj) ]
+  * Swag
+  * s/precise/bionic/ as precise is no longer supported by launchpad for new builds, we do however get bionic these days.
+
+  [ Leonard Lausen ]
+  * Detect errors with pkg-tools macro expansion
+
+  [ Evan Klitzke ]
+  * This fixes the Travis set suite.
+  * Clean up configure.ac, and be more strict about errors
+  * Lower the default sample rate, as the old value was way too high
+
+  [ Steven Karas ]
+  * skip samples that throw a PtraceException
+  * Count ptrace failures and include in report
+
+  [ Evan Klitzke ]
+  * Tag version 1.6.4
+  * update test suite python invocation for rpm packaging
+  * remove another python invocation for rpm packaging
+  * release v1.6.5
+  * remove git version from version
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 25 Apr 2018 11:07:25 -0700
 
 pyflame (1.6.3) unstable; urgency=medium
 
