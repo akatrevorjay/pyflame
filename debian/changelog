@@ -1,3 +1,10 @@
+pyflame (1.6.5-0~ppa~bionic0) bionic; urgency=medium
+
+  * Rebuild for bionic
+  * Changed build-dependencies to packages available in bionic
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 25 Apr 2018 11:24:33 -0700
+
 pyflame (1.6.5-0~ppa) bionic; urgency=medium
 
   [ Trevor Joynson (Debian) ]
