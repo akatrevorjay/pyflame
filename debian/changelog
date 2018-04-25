@@ -1,3 +1,29 @@
+pyflame (1.6.3-0~ppa~1.gbp73b816) UNRELEASED; urgency=medium
+
+  ** SNAPSHOT build @73b81693150ac1ba41e70e3627f14c4277c2fbaa **
+
+  [ Trevor Joynson (Debian) ]
+  ** SNAPSHOT build @a316654e8dc090b278207fb287f219bbb2b03b54 **
+
+  * UNRELEASED
+
+  [ Trevor Joynson (trevorj) ]
+  * Up
+  * Yakkety is no longer supported
+  * Up
+  * Update build script
+
+  [ Evan Klitzke ]
+  * allow building without git commit (for rpm builds)
+  * add COPR badge
+  * Make it so the pyflame test suite can be run on EPEL7
+  * tag v1.6.2
+  * fix tests on ASCII filesystems
+
+  [ Trevor Joynson (Debian) ]
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 15 Nov 2017 20:49:24 -0800
+
 pyflame (1.6.3) unstable; urgency=medium
 
   * Fix running the tests on ASCII filesystems.
@@ -28,6 +54,14 @@ pyflame (1.5.7) unstable; urgency=medium
 
  -- Evan Klitzke <evan@death.star>  Wed, 11 Oct 2017 18:58:19 -0700
 
+pyflame (1.5.6ubuntu1~1.gbpaf31c3) UNRELEASED; urgency=medium
+
+  ** SNAPSHOT build @af31c372321221930163f55bcfc4f0689902bbe7 **
+
+  * UNRELEASED
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Fri, 06 Oct 2017 12:15:58 -0700
+
 pyflame (1.5.6) unstable; urgency=medium
 
   * Fix minor issue w/ EAGAIN during munmap
@@ -52,6 +86,180 @@ pyflame (1.5.3) unstable; urgency=medium
   * Fix 32-bit builds.
 
  -- Evan Klitzke <evan@death.star>  Mon, 07 Aug 2017 22:30:20 -0700
+
+pyflame (1.5.2ppa1ubuntu1~2.gbp4b49bd) UNRELEASED; urgency=medium
+
+  ** SNAPSHOT build @4b49bdba91a3092778882a49e13b19f6d5d851fb **
+
+  [ Trevor Joynson (trevorj) ]
+  * Dockerize
+
+  [ Trevor Joynson (Debian) ]
+
+  [ Anaël Beutot ]
+  * Add an optional output to a file
+  * configure.ac: use python2 for pkg-config PY2 check instead of python
+
+  [ Evan Klitzke ]
+  * fix a minor typo
+  * tag v1.2.2
+  * readme tweaks
+
+  [ Max Bolingbroke ]
+  * Ensure we specify that we want to use a C++ compiler
+
+  [ Evan Klitzke ]
+  * need to install make on jessie
+
+  [ Max Bolingbroke ]
+  * * Initial work on multi-threaded Python stack traces * Walk the .symtab to find interp_head
+
+  [ James Pickering ]
+  * * Get interp_head from PyInterpreterState_Head, using evil ptrace hacks * Detect if Python executable is PIE * Add test for multithreading
+
+  [ Evan Klitzke ]
+  * use mmap
+
+  [ James Pickering ]
+  * Pause threads during unsafe memory writes
+
+  [ Evan Klitzke ]
+  * pep-8
+  * add note about clang-format
+  * add an option to disable multi-threading
+  * add contributing notes
+
+  [ Marcio Ribeiro ]
+  * feat(pyfrob) let user set python version (#54)
+
+  [ Evan Klitzke ]
+  * disable thread profiling by default, fixes #55 (#58)
+  * release 1.3.0
+  * make sure we dealloc the page when using PtraceCallFunction() (#59)
+  * include chrono
+  * check the return value of ptrace for PTRACE_CONT and PTRACE_SINGLESTEP
+  * only call PtraceCallFunction when using --threads
+  * release 1.3.1
+
+  [ Trevor Joynson (trevorj) ]
+  * Remove patches
+
+  [ James Pickering ]
+  * Fix crash on PtraceCleanup (#61)
+
+  [ Trevor Joynson (Debian) ]
+
+  [ Trevor Joynson (trevorj) ]
+  * Bump
+
+  [ James Pickering ]
+  * Respect threads setting in `frob.cc` - fixes #62
+  * Merge sections on threading and idle time in README.md
+
+  [ Trevor Joynson (Debian) ]
+
+  [ Trevor Joynson (trevorj) ]
+  * Bump
+
+  [ Franck Michea ]
+  * Clarify example command usage in README.md
+
+  [ Trevor Joynson (Debian) ]
+
+  [ Jack Vreeken ]
+  * Fix line number parsing for Python 3
+
+  [ Trevor Joynson (trevorj) ]
+  * Bump
+
+  [ Evan Klitzke ]
+  * make inlining more explicit
+  * add python3 packages to installation reqs
+  * Update Travis configuration, to fix Python version tests.
+  * update autoscan stuff, tested on trusty
+  * update README notes about python3
+  * link to issues
+  * Make Python 3 notes more prominent.
+  * more Python 3 notes
+  * Significantly rework README, and add TOC
+  * use this travis thing
+  * Refactor how the test suite is invoked. (#79)
+  * Numerous README changes.
+  * update flame graph link
+  * add multi-threading note
+  * reword
+  * reword
+  * the last readme change, really
+  * make the test suite slightly stricter
+  * reformat the tests with yapf
+  * Add YAPF note to README
+  * move badge
+  * update sample rate docs
+
+  [ Trevor Joynson (Debian) ]
+
+  [ Trevor Joynson (trevorj) ]
+  * Bump
+
+  [ Evan Klitzke ]
+  * update Docker related docs
+
+  [ faicker.mo ]
+  * Support glibc version<2.14 without setns api(centos6)
+
+  [ Evan Klitzke ]
+  * netns.h -> setns.h
+  * link to chinese language centos 6 guide
+
+  [ jmphilli ]
+  * push
+
+  [ Evan Klitzke ]
+  * tag and release v1.4.0
+  * add notes on python versions supported
+  * Remove an unneeded Travis step.
+  * Version -> ABI.
+  * update hacking section of README
+  * tag 1.4.1
+  * wording
+  * allow forcing the ABI again, for uwsgi (#87)
+  * tag 1.4.2
+  * move documentation to rtfd/sphinx
+  * .
+  * fix a thing
+  * fix for #88
+  * tag 1.4.3
+  * move badge order
+  * fix #90
+  * reword some docs stuff
+  * move all Python.h checks to configure.ac
+  * Various autoconf improvements.
+
+  [ jackvreeken ]
+  * Unicode support (#92)
+
+  [ Evan Klitzke ]
+  * use skipif here as well
+  * tag 1.5.0 release
+  * remove an unneeded skipif and yapf the tests
+  * detect when test suite is run from within a virtualenv (#95)
+  * Fix a bug in PtraceDetach when threads are enabled (#94)
+  * convert the man page to pandoc, fixes #97
+  * relase v1.5.1, which fixes #93
+  * explain how --abi works
+  * Switch to -p to specify the process to trace, fixes #99 (#100)
+  * remove pointless build note (#101)
+  * augment version string (#103)
+  * fix a bug with venv deactivation in runtests.sh (#105)
+  * tag v1.5.2
+  * Switch to PTRACE_TRACEME to fix startup race conditions. (#106)
+  * add version string to -h output
+  * be less aggressive about probing for libpython in attach mode (#107)
+  * refactor the main probe loop (#108)
+
+  [ Trevor Joynson (Debian) ]
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Thu, 03 Aug 2017 18:16:06 -0700
 
 pyflame (1.5.2) unstable; urgency=medium
 
@@ -122,6 +330,52 @@ pyflame (1.2.2) unstable; urgency=medium
   * Add a -o/--output flag
 
  -- Evan Klitzke <evan@localhost>  Sat, 18 Feb 2017 18:36:07 -0800
+
+pyflame (1.2.1ppa7ubuntu1~1.gbpa193f5) UNRELEASED; urgency=medium
+
+  ** SNAPSHOT build @a193f56c757946d3b35e56d2d5643e606b27d32a **
+
+  [ Trevor Joynson (trevorj) ]
+  * Workaround failure when we lack namespace support
+  * Python 3.2 on precise does not have PyASCIIObject in scope
+  * Add note about PPA
+  * Lol
+  * mrclean
+
+  [ Trevor Joynson (Debian) ]
+
+ -- Trevor Joynson (trevorj) <github@skywww.net>  Mon, 06 Feb 2017 00:38:05 -0800
+
+pyflame (1.2.1ppa6) unstable; urgency=medium
+
+  * Patchy patches
+  * Snapshot build
+  * Build
+  * Whoops
+  * Hacks on hacks
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 14 Dec 2016 13:15:35 -0800
+
+pyflame (1.2.1ppa5) unstable; urgency=medium
+
+  [ Trevor Joynson (trevorj) ]
+  * Fix package deps for py3
+
+  [ Trevor Joynson (Debian) ]
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Fri, 11 Nov 2016 09:02:04 -0800
+
+pyflame (1.2.1-0ppa4) unstable; urgency=medium
+
+  * Build for python3 as well
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Thu, 10 Nov 2016 03:28:53 -0800
+
+pyflame (1.2.1-0ppa3) unstable; urgency=medium
+
+  * Bump to 1.2.1
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Tue, 10 Nov 2016 22:14:32 -0700
 
 pyflame (1.2.1) unstable; urgency=medium
 
