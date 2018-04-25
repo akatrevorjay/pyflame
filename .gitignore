@@ -17,5 +17,8 @@ src/pyflame
 build-aux/
 configure
 config.h
+\.pytest_cache/
 stamp-h1
 \.test_env/
+libtool.m4
+lt*.m4
