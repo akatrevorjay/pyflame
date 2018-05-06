@@ -1,6 +1,7 @@
-pyflame (1.6.3-0ubuntu1~ppa~4.gbp0757c4) unstable; urgency=medium
+pyflame (1.6.5-0~ppa) bionic; urgency=medium
 
-  ** SNAPSHOT build @0757c4274ed4556f857b4cd3c8b17090d857e427 **
+  [ Trevor Joynson (Debian) ]
+  * Release the kraken to PPA
 
   [ Trevor Joynson (trevorj) ]
   * Up
@@ -39,7 +40,23 @@ pyflame (1.6.3-0ubuntu1~ppa~4.gbp0757c4) unstable; urgency=medium
   * Clean up configure.ac, and be more strict about errors
   * Lower the default sample rate, as the old value was way too high
 
- -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Sun, 15 Apr 2018 19:43:10 -0700
+  [ Steven Karas ]
+  * skip samples that throw a PtraceException
+  * Count ptrace failures and include in report
+
+  [ Evan Klitzke ]
+  * Tag version 1.6.4
+  * update test suite python invocation for rpm packaging
+  * remove another python invocation for rpm packaging
+  * release v1.6.5
+  * remove git version from version
+
+  [ Trevor Joynson (trevorj) ]
+  * Bump
+  * Revert "remove debian/ directory from master"
+  * Bump deux
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 25 Apr 2018 11:14:32 -0700
 
 pyflame (1.6.3) unstable; urgency=medium
 

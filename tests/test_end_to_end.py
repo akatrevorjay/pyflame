@@ -286,7 +286,7 @@ def test_legacy_pid_handling_too_many_pids():
 
 def test_dash_t_and_dash_p():
     proc = subprocess.Popen(
-        [path_to_pyflame(), '-p', '1', '-t', 'python', '--version'],
+        [path_to_pyflame(), '-p', '1', '-t', sys.executable, '--version'],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         universal_newlines=True)
@@ -563,8 +563,8 @@ def test_sigchld():
     t0 = time.time()
     proc = subprocess.Popen(
         [
-            path_to_pyflame(), '-t', 'python', './tests/sleeper.py', '-t', '2',
-            '-f'
+            path_to_pyflame(), '-t', sys.executable, './tests/sleeper.py',
+            '-t', '2', '-f'
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
