@@ -1,5 +1,5 @@
 AC_PREREQ([2.68])
-AC_INIT([pyflame], [1.6.5], [evan@eklitzke.org])
+AC_INIT([pyflame], [1.6.6], [evan@eklitzke.org])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([src/config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -92,7 +92,7 @@ AC_CHECK_FUNCS([getpagesize memmove munmap strerror strtol strtoul])
 
 AC_DEFINE_UNQUOTED(
   [PYFLAME_VERSION_STR],
-  ["Pyflame $PACKAGE_VERSION $host_os $host_cpu"],
+  ["pyflame $PACKAGE_VERSION $host_os $host_cpu"],
   [A string containing build information.])
 
 enable_py26=no
