@@ -1,3 +1,23 @@
+pyflame (1.6.6-0ubuntu1~ppa) bionic; urgency=medium
+
+  [ Evan Klitzke ]
+  * fix "make check" when virtualenv is named virtualenv-3
+  * use lowercase name in pyflame -v
+  * better error message when running pyflame with a non-pid argument
+
+  [ Igor Nikolaev ]
+  * Add a flag to disable line numbers
+  * Skip permissions test when running inside Docker
+  * Add no line number test
+  * Fix comments
+  * Fix test formatting
+
+  [ Evan Klitzke ]
+  * keep these more alphabetized
+  * tag 1.6.6 release
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Sun, 06 May 2018 04:51:05 -0700
+
 pyflame (1.6.5-0~ppa) bionic; urgency=medium
 
   [ Trevor Joynson (Debian) ]
@@ -56,7 +76,7 @@ pyflame (1.6.5-0~ppa) bionic; urgency=medium
   * Revert "remove debian/ directory from master"
   * Bump deux
 
- -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Wed, 25 Apr 2018 11:14:32 -0700
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Sun, 06 May 2018 04:50:00 -0700
 
 pyflame (1.6.3) unstable; urgency=medium
 
