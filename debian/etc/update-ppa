@@ -2,7 +2,8 @@
 set -e
 set -v
 
-: ${PPA:=ppa:trevorjay/pyflame}
+# aliased ppa:trevorjay/pyflame
+: ${PPA:=pyflame}
 
 on_exit() {
     git checkout master || :
