@@ -1,4 +1,4 @@
-pyflame (1.6.6-0ubuntu1~ppaubuntu1~1.gbp8fefec) UNRELEASED; urgency=medium
+pyflame (1.6.6-0ubuntu1~ppaubuntu1~1.gbp8fefec~zesty0) zesty; urgency=medium
 
   ** SNAPSHOT build @8fefec45c68f2acab0742f95f3ac8101bce1b0a3 **
 
@@ -10,7 +10,11 @@ pyflame (1.6.6-0ubuntu1~ppaubuntu1~1.gbp8fefec) UNRELEASED; urgency=medium
   * Speed up future builds
   * Have to use sftp now it seems.
 
- -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Mon, 09 Jul 2018 13:50:42 -0700
+  [ Trevor Joynson (Debian) ]
+  * Rebuild for zesty
+  * Changed build-dependencies to packages available in zesty
+
+ -- Trevor Joynson (Debian) <debian@trevor.joynson.io>  Mon, 09 Jul 2018 13:51:36 -0700
 
 pyflame (1.6.6-0ubuntu1~ppa) bionic; urgency=medium
 
