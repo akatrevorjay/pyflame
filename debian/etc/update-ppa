@@ -93,7 +93,7 @@ base_version=$(dpkg-parsechangelog -S Version)
 #git tag -f "$debian_prefix/v${base_version}"
 
 if [[ ${#dists[@]} -eq 0 ]]; then
-    dists=(artful zesty xenial bionic)
+    dists=(artful xenial bionic cosmic)
 fi
 
 
